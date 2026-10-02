@@ -1,0 +1,21 @@
+/* styles/admin-tokens.css — Admin Design Tokens from DASHBOARD.md */
+:root {
+  --canvas: #e6e9ec;
+  --surface: #fdfcff;
+  --page: #f6f5fa;
+  --well: #f6f5fa;
+  --border: #e4e3ea;
+  --border-strong: #cfcdd8;
+  --text: #16151c;
+  --text-2: #4a4955;
+  --text-3: #86858f;
+  --accent: #5b4be0;
+  --accent-hover: #4d3ed1;
+  --accent-soft: #ece9fd;
+  --ok: #12874f;
+  --ok-bg: #e3f6ec;
+  --bad: #d92d4a;
+  --bad-bg: #fde8ec;
+  --warn: #a35c00;
+  --warn-bg: #fff1dc;
+}

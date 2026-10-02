@@ -1,0 +1,6 @@
+{
+  "name": "Dominion — Portfolio",
+  "description": "Personal editorial portfolio of Dominion: product designer, web developer, data analyst and researcher.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

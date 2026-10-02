@@ -1,0 +1,48 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+
+/* Noise overlay on body::before */
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-inter-tight), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+  min-height: 100vh;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: url('/noise.svg');
+  background-repeat: repeat;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.35;
+}
+
+/* Detail page justified paragraphs per DESIGN.md §3 */
+.editorial-paragraphs p {
+  text-align: justify;
+  hyphens: auto;
+}
+
+@media (max-width: 639px) {
+  .editorial-paragraphs p {
+    text-align: left;
+    hyphens: manual;
+  }
+}
+
+/* Subtle focus outline */
+*:focus-visible {
+  outline: 1px solid var(--text-hi);
+  outline-offset: 2px;
+}

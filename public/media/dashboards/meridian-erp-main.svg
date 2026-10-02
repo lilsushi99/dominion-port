@@ -1,0 +1,65 @@
+<svg width="1200" height="750" viewBox="0 0 1200 750" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="750" fill="#18191a" rx="4"/>
+  <!-- Top bar -->
+  <rect x="0" y="0" width="1200" height="44" fill="#202224"/>
+  <text x="32" y="27" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12" letter-spacing="0.05em">MERIDIAN ERP // OPERATIONS TELEMETRY // LINE 03</text>
+  <text x="1060" y="27" fill="#d6d5cf" font-family="monospace" font-size="12">LIVE FEED 60HZ</text>
+
+  <!-- 4 KPI Cards (Anti-slop, clean dark technical aesthetic) -->
+  <rect x="32" y="64" width="265" height="90" fill="#222426" rx="2"/>
+  <text x="52" y="92" fill="#75746f" font-family="system-ui, sans-serif" font-size="11">TOTAL SHIFT OUTPUT</text>
+  <text x="52" y="126" fill="#d6d5cf" font-family="monospace" font-size="24" font-weight="600">8,410 PCS</text>
+  <text x="180" y="126" fill="#8f8e89" font-family="monospace" font-size="12">+4.2% vs target</text>
+
+  <rect x="317" y="64" width="265" height="90" fill="#222426" rx="2"/>
+  <text x="337" y="92" fill="#75746f" font-family="system-ui, sans-serif" font-size="11">LINE CYCLE TIME (TICK)</text>
+  <text x="337" y="126" fill="#d6d5cf" font-family="monospace" font-size="24" font-weight="600">14.2 SEC</text>
+  <text x="465" y="126" fill="#8f8e89" font-family="monospace" font-size="12">nom: 15.0s</text>
+
+  <rect x="602" y="64" width="265" height="90" fill="#222426" rx="2"/>
+  <text x="622" y="92" fill="#75746f" font-family="system-ui, sans-serif" font-size="11">SCRAP RATE COEFFICIENT</text>
+  <text x="622" y="126" fill="#d6d5cf" font-family="monospace" font-size="24" font-weight="600">0.08%</text>
+  <text x="750" y="126" fill="#8f8e89" font-family="monospace" font-size="12">sub-threshold</text>
+
+  <rect x="887" y="64" width="281" height="90" fill="#222426" rx="2"/>
+  <text x="907" y="92" fill="#75746f" font-family="system-ui, sans-serif" font-size="11">INVENTORY SAFETY DAYS</text>
+  <text x="907" y="126" fill="#d6d5cf" font-family="monospace" font-size="24" font-weight="600">18.4 DAYS</text>
+  <text x="1040" y="126" fill="#8f8e89" font-family="monospace" font-size="12">reorder at 7d</text>
+
+  <!-- Big Production Throughput Area (Grid & Line) -->
+  <rect x="32" y="174" width="1136" height="260" fill="#1e2022" rx="2"/>
+  <text x="52" y="206" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12">HOURLY UNIT THROUGHPUT (ACTUAL VS PLANNED RUN RATE)</text>
+  
+  <!-- Subtle Grid lines -->
+  <line x1="52" y1="240" x2="1140" y2="240" stroke="#282a2d" stroke-width="1"/>
+  <line x1="52" y1="290" x2="1140" y2="290" stroke="#282a2d" stroke-width="1"/>
+  <line x1="52" y1="340" x2="1140" y2="340" stroke="#282a2d" stroke-width="1"/>
+  <line x1="52" y1="390" x2="1140" y2="390" stroke="#282a2d" stroke-width="1"/>
+
+  <!-- Stepped Telemetry chart line -->
+  <path d="M60 360 L140 330 L220 340 L300 290 L380 270 L460 280 L540 250 L620 230 L700 240 L780 220 L860 210 L940 220 L1020 205 L1100 200" 
+        stroke="#d6d5cf" stroke-width="2" fill="none"/>
+  <!-- Target dashed line -->
+  <line x1="60" y1="260" x2="1100" y2="260" stroke="#75746f" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+  <!-- Batch Ledger Table Below -->
+  <rect x="32" y="454" width="1136" height="260" fill="#1b1d1f" rx="2"/>
+  <text x="52" y="484" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="11">BATCH SERIAL</text>
+  <text x="240" y="484" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="11">SUB-ASSEMBLY</text>
+  <text x="500" y="484" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="11">STATION ID</text>
+  <text x="740" y="484" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="11">OPERATOR</text>
+  <text x="960" y="484" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="11">DISPOSITION</text>
+  <line x1="32" y1="500" x2="1168" y2="500" stroke="#282a2d" stroke-width="1"/>
+
+  <text x="52" y="534" fill="#d6d5cf" font-family="monospace" font-size="13">BCH-9941-K</text>
+  <text x="240" y="534" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="13">Titanium Impeller Core v3</text>
+  <text x="500" y="534" fill="#8f8e89" font-family="monospace" font-size="13">CNC-MILL-08</text>
+  <text x="740" y="534" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="13">J. Adebayo</text>
+  <text x="960" y="534" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="13">Verified Clear</text>
+
+  <text x="52" y="574" fill="#d6d5cf" font-family="monospace" font-size="13">BCH-9942-K</text>
+  <text x="240" y="574" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="13">Planetary Gear Housing</text>
+  <text x="500" y="574" fill="#8f8e89" font-family="monospace" font-size="13">LATHE-ST-02</text>
+  <text x="740" y="574" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="13">M. Chen</text>
+  <text x="960" y="574" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="13">In Tolerance (0.002mm)</text>
+</svg>

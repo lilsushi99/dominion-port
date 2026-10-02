@@ -1,0 +1,21 @@
+<svg width="1400" height="880" viewBox="0 0 1400 880" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1400" height="880" fill="#18191b" rx="4"/>
+  <rect x="0" y="0" width="1400" height="50" fill="#202225"/>
+  <text x="40" y="32" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="13" font-weight="500">MERIDIAN ERP // SUB-ASSEMBLY COMPONENT ALLOCATION MATRIX</text>
+  
+  <rect x="40" y="80" width="1320" height="740" fill="#1d1f22" rx="3"/>
+  <text x="70" y="130" fill="#75746f" font-family="monospace" font-size="12">PART NUMBER</text>
+  <text x="280" y="130" fill="#75746f" font-family="monospace" font-size="12">DESCRIPTION</text>
+  <text x="560" y="130" fill="#75746f" font-family="monospace" font-size="12">ON-HAND</text>
+  <text x="750" y="130" fill="#75746f" font-family="monospace" font-size="12">RESERVED (WIP)</text>
+  <text x="960" y="130" fill="#75746f" font-family="monospace" font-size="12">SAFETY MINIMUM</text>
+  <text x="1180" y="130" fill="#75746f" font-family="monospace" font-size="12">STATUS</text>
+  <line x1="40" y1="150" x2="1360" y2="150" stroke="#282a2e" stroke-width="1"/>
+
+  <text x="70" y="195" fill="#d6d5cf" font-family="monospace" font-size="13">PN-902-TI</text>
+  <text x="280" y="195" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="13">Titanium Alloy Impeller Vane</text>
+  <text x="560" y="195" fill="#d6d5cf" font-family="monospace" font-size="13">1,480 PCS</text>
+  <text x="750" y="195" fill="#8f8e89" font-family="monospace" font-size="13">620 PCS</text>
+  <text x="960" y="195" fill="#8f8e89" font-family="monospace" font-size="13">400 PCS</text>
+  <text x="1180" y="195" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="13">Sufficient</text>
+</svg>

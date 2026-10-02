@@ -1,0 +1,15 @@
+<svg width="1400" height="900" viewBox="0 0 1400 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1400" height="900" fill="#1b1c1d" rx="4"/>
+  <rect x="0" y="0" width="1400" height="50" fill="#232527"/>
+  <text x="40" y="32" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="13" font-weight="500">NORTHWIND FREIGHT // AUTOMATED DISPATCH EXCEPTION ROUTING</text>
+  
+  <rect x="180" y="140" width="1040" height="620" fill="#222427" rx="4" stroke="#2d3034" stroke-width="1"/>
+  <text x="220" y="190" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="18" font-weight="600">Route Exception Detected: Flooding on Corridor N-2</text>
+  <text x="220" y="225" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="14">Estimated Delay on primary arterial: +6.5 hours. Automated reroute calculation ready.</text>
+  
+  <rect x="220" y="260" width="960" height="180" fill="#1b1c1e" rx="3"/>
+  <text x="250" y="295" fill="#75746f" font-family="system-ui, sans-serif" font-size="12">RECOMMENDED ALTERNATIVE ROUTE</text>
+  <text x="250" y="325" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="15" font-weight="500">Via Bypass Road B-41 → Toll Gateway South</text>
+  <text x="250" y="355" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="13">Added distance: 18.4 km · Fuel delta: +4.2 liters · ETA variance: +22 minutes vs nominal schedule.</text>
+  <text x="250" y="390" fill="#d6d5cf" font-family="monospace" font-size="12">CONFIRM DISPATCH RE-ROUTING TO 14 FLEET UNITS</text>
+</svg>

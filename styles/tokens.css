@@ -1,0 +1,11 @@
+/* styles/tokens.css — Design Tokens from DESIGN.md */
+:root {
+  --bg: #2a2a2a;
+  --text: #b9b8b2;
+  --text-hi: #d6d5cf;
+  --text-mid: #8f8e89;
+  --text-low: #75746f;
+  --rule: rgba(255, 255, 255, 0.08);
+  --radius: 4px;
+  --col: 655px;
+}

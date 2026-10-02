@@ -1,0 +1,52 @@
+<svg width="1200" height="750" viewBox="0 0 1200 750" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="750" fill="#1c1d1e" rx="4"/>
+  <!-- Top Telemetry header -->
+  <rect x="0" y="0" width="1200" height="46" fill="#242628"/>
+  <text x="32" y="28" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12">HARBOR &amp; CO // POS MULTI-TERMINAL SURVEILLANCE // 32 LANES ACTIVE</text>
+  <text x="1050" y="28" fill="#d6d5cf" font-family="monospace" font-size="12">LATENCY: 18MS</text>
+
+  <!-- Split screen: Real-time Register Grid & Basket Value Distribution -->
+  <rect x="32" y="66" width="700" height="640" fill="#202224" rx="2"/>
+  <text x="56" y="98" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12">TERMINAL CLUSTER LIVE FEED</text>
+
+  <!-- 6 Register cards -->
+  <rect x="56" y="120" width="310" height="150" fill="#26282b" rx="2"/>
+  <text x="76" y="146" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="13" font-weight="600">LANE 01 — EXPRESS GROCERY</text>
+  <text x="76" y="176" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12">Current basket: $48.20 (9 items)</text>
+  <text x="76" y="200" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12">Velocity: 24 scans/min</text>
+  <text x="76" y="240" fill="#b9b8b2" font-family="monospace" font-size="11">TILL CASH: $1,420.00 · BALANCED</text>
+
+  <rect x="390" y="120" width="310" height="150" fill="#26282b" rx="2"/>
+  <text x="410" y="146" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="13" font-weight="600">LANE 02 — BULK WHOLESALE</text>
+  <text x="410" y="176" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12">Current basket: $310.50 (28 items)</text>
+  <text x="410" y="200" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12">Velocity: 31 scans/min</text>
+  <text x="410" y="240" fill="#b9b8b2" font-family="monospace" font-size="11">TILL CASH: $3,890.00 · BALANCED</text>
+
+  <rect x="56" y="290" width="310" height="150" fill="#26282b" rx="2"/>
+  <text x="76" y="316" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="13" font-weight="600">LANE 03 — SELF CHECKOUT A</text>
+  <text x="76" y="346" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12">Current basket: $14.10 (3 items)</text>
+  <text x="76" y="370" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12">Velocity: 12 scans/min</text>
+  <text x="76" y="410" fill="#b9b8b2" font-family="monospace" font-size="11">TILL CASH: $0.00 · CARD ONLY</text>
+
+  <rect x="390" y="290" width="310" height="150" fill="#26282b" rx="2"/>
+  <text x="410" y="316" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="13" font-weight="600">LANE 04 — SELF CHECKOUT B</text>
+  <text x="410" y="346" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12">Current basket: $82.40 (14 items)</text>
+  <text x="410" y="370" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12">Velocity: 16 scans/min</text>
+  <text x="410" y="410" fill="#b9b8b2" font-family="monospace" font-size="11">TILL CASH: $0.00 · CARD ONLY</text>
+
+  <!-- Right Panel: Margin leakage & Void alerts -->
+  <rect x="752" y="66" width="416" height="640" fill="#202224" rx="2"/>
+  <text x="776" y="98" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12">HOURLY DISCREPANCY &amp; VOID ALERTS</text>
+  
+  <rect x="776" y="120" width="368" height="80" fill="#272223" rx="2"/>
+  <text x="796" y="146" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="13">Item Void Anomaly detected: Lane 07</text>
+  <text x="796" y="172" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12">Manager key override · $142.00 meat cut</text>
+
+  <rect x="776" y="215" width="368" height="80" fill="#252628" rx="2"/>
+  <text x="796" y="241" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="13">Cash Drawer Float Check: Lane 02</text>
+  <text x="796" y="267" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12">Threshold passed $3,500 · Drop requested</text>
+
+  <rect x="776" y="310" width="368" height="80" fill="#252628" rx="2"/>
+  <text x="796" y="336" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="13">Mid-Day Shift Reconciliation complete</text>
+  <text x="796" y="362" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12">Cash Variance across 12 tills: -$4.12 (99.98% match)</text>
+</svg>

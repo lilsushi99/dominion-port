@@ -1,0 +1,72 @@
+<svg width="1200" height="750" viewBox="0 0 1200 750" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="750" fill="#1e1e1e" rx="4"/>
+  <!-- App Container Header -->
+  <rect x="0" y="0" width="1200" height="48" fill="#242424"/>
+  <circle cx="28" cy="24" r="5" fill="#3a3a3a"/>
+  <circle cx="44" cy="24" r="5" fill="#3a3a3a"/>
+  <circle cx="60" cy="24" r="5" fill="#3a3a3a"/>
+  <text x="100" y="29" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12" letter-spacing="0.04em">northwind / freight-telemetry / active-transit</text>
+  
+  <!-- Metrics Bar -->
+  <rect x="40" y="80" width="1120" height="70" fill="#282828" rx="4"/>
+  <text x="70" y="112" fill="#75746f" font-family="system-ui, sans-serif" font-size="12">ACTIVE MANIFESTS</text>
+  <text x="70" y="136" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="18" font-weight="600">1,428 UNITS</text>
+  
+  <text x="350" y="112" fill="#75746f" font-family="system-ui, sans-serif" font-size="12">ON-TIME ROUTE INDEX</text>
+  <text x="350" y="136" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="18" font-weight="600">98.4%</text>
+
+  <text x="630" y="112" fill="#75746f" font-family="system-ui, sans-serif" font-size="12">DELAYED / RE-ROUTED</text>
+  <text x="630" y="136" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="18" font-weight="600">6 HUBS</text>
+
+  <text x="910" y="112" fill="#75746f" font-family="system-ui, sans-serif" font-size="12">TELEMETRY SYNC STATUS</text>
+  <text x="910" y="136" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="14">STREAMING LIVE</text>
+
+  <!-- Data Table -->
+  <rect x="40" y="180" width="1120" height="520" fill="#222222" rx="4"/>
+  <!-- Table Header -->
+  <text x="70" y="220" fill="#75746f" font-family="system-ui, sans-serif" font-size="12">CONTAINER ID</text>
+  <text x="250" y="220" fill="#75746f" font-family="system-ui, sans-serif" font-size="12">ORIGIN PORT</text>
+  <text x="450" y="220" fill="#75746f" font-family="system-ui, sans-serif" font-size="12">DESTINATION TERMINAL</text>
+  <text x="700" y="220" fill="#75746f" font-family="system-ui, sans-serif" font-size="12">CARGO WEIGHT</text>
+  <text x="920" y="220" fill="#75746f" font-family="system-ui, sans-serif" font-size="12">TELEMETRY ETA</text>
+  <line x1="40" y1="240" x2="1160" y2="240" stroke="#2e2e2e" stroke-width="1"/>
+
+  <!-- Row 1 -->
+  <text x="70" y="285" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="14" font-weight="500">NW-94021-TX</text>
+  <text x="250" y="285" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="14">Lagos Apapa Wharf</text>
+  <text x="450" y="285" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="14">Kano Inland Terminal</text>
+  <text x="700" y="285" fill="#8f8e89" font-family="monospace" font-size="13">24,400 KG</text>
+  <text x="920" y="285" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="14">Today, 16:40</text>
+  <line x1="40" y1="315" x2="1160" y2="315" stroke="#2a2a2a" stroke-width="1"/>
+
+  <!-- Row 2 -->
+  <text x="70" y="360" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="14" font-weight="500">NW-88102-GH</text>
+  <text x="250" y="360" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="14">Tema Harbor Terminal</text>
+  <text x="450" y="360" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="14">Kumasi Distribution Center</text>
+  <text x="700" y="360" fill="#8f8e89" font-family="monospace" font-size="13">18,200 KG</text>
+  <text x="920" y="360" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="14">Tomorrow, 09:15</text>
+  <line x1="40" y1="390" x2="1160" y2="390" stroke="#2a2a2a" stroke-width="1"/>
+
+  <!-- Row 3 -->
+  <text x="70" y="435" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="14" font-weight="500">NW-77291-CI</text>
+  <text x="250" y="435" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="14">San Pedro Marine Hub</text>
+  <text x="450" y="435" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="14">Abidjan North Depot</text>
+  <text x="700" y="435" fill="#8f8e89" font-family="monospace" font-size="13">31,850 KG</text>
+  <text x="920" y="435" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="14">In Transit (Clear)</text>
+  <line x1="40" y1="465" x2="1160" y2="465" stroke="#2a2a2a" stroke-width="1"/>
+
+  <!-- Row 4 -->
+  <text x="70" y="510" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="14" font-weight="500">NW-62940-NG</text>
+  <text x="250" y="510" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="14">Port Harcourt Complex</text>
+  <text x="450" y="510" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="14">Enugu Central Depot</text>
+  <text x="700" y="510" fill="#8f8e89" font-family="monospace" font-size="13">15,600 KG</text>
+  <text x="920" y="510" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="14">Arrived at Gate 4</text>
+  <line x1="40" y1="540" x2="1160" y2="540" stroke="#2a2a2a" stroke-width="1"/>
+
+  <!-- Row 5 -->
+  <text x="70" y="585" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="14" font-weight="500">NW-55109-BJ</text>
+  <text x="250" y="585" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="14">Cotonou Commercial Pier</text>
+  <text x="450" y="585" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="14">Parakou Regional Hub</text>
+  <text x="700" y="585" fill="#8f8e89" font-family="monospace" font-size="13">22,100 KG</text>
+  <text x="920" y="585" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="14">Scheduled Dep. 21:00</text>
+</svg>

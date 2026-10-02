@@ -1,0 +1,28 @@
+<svg width="1200" height="750" viewBox="0 0 1200 750" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="750" fill="#1b1c1d" rx="4"/>
+  <!-- Brightpath Design Studio Workspace -->
+  <rect x="0" y="0" width="1200" height="52" fill="#222426"/>
+  <text x="60" y="32" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="14" font-weight="600">BRIGHTPATH / COHORT 04 STUDIO</text>
+  <text x="1000" y="32" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12">MODULE 3: SYSTEM TOKENS</text>
+
+  <!-- Left Sidebar (Curriculum Milestones) -->
+  <rect x="40" y="80" width="280" height="620" fill="#222426" rx="3"/>
+  <text x="60" y="115" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="11" letter-spacing="0.1em">CURRICULUM TREE</text>
+  <text x="60" y="150" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="13">01. Spatial Typography</text>
+  <text x="60" y="185" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="13">02. Tabular Information Design</text>
+  <text x="60" y="220" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="13" font-weight="600">03. Token Architectures →</text>
+  <text x="60" y="255" fill="#75746f" font-family="system-ui, sans-serif" font-size="13">04. Design Systems at Scale</text>
+  <text x="60" y="290" fill="#75746f" font-family="system-ui, sans-serif" font-size="13">05. Capstone Defense</text>
+
+  <!-- Center Workspace (Interactive Frame Critique) -->
+  <rect x="340" y="80" width="820" height="620" fill="#141516" rx="3"/>
+  <rect x="380" y="120" width="460" height="300" fill="#202224" rx="3"/>
+  <text x="400" y="160" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="16" font-weight="500">Student Artifact: Order Management Flow</text>
+  <text x="400" y="195" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="13">Assigned to: Cohort Fellow #14 · Evaluated by Dominion</text>
+
+  <!-- Instructor Critique Annotation Pin -->
+  <rect x="400" y="240" width="400" height="120" fill="#2a2c30" rx="3"/>
+  <text x="420" y="270" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="13" font-weight="500">Instructor Critique Note (Dominion):</text>
+  <text x="420" y="295" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="12">"Tighten line-height on secondary metadata. The contrast between table row and total summary should follow a 2:1 weight hierarchy."</text>
+  <text x="420" y="335" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="11">Timecode 04:12 in Video Walkthrough</text>
+</svg>

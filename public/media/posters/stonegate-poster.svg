@@ -1,0 +1,30 @@
+<svg width="1200" height="750" viewBox="0 0 1200 750" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="750" fill="#202020" rx="4"/>
+  <!-- Minimalist Stonegate Architectural finishes showcase -->
+  <rect x="0" y="0" width="1200" height="60" fill="#252525"/>
+  <text x="60" y="36" fill="#d6d5cf" font-family="serif" font-size="16" letter-spacing="0.1em">STONEGATE ARCHITECTURAL</text>
+  <text x="1000" y="36" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="12">CATALOGUE VOL. IV</text>
+
+  <!-- Editorial layout grid -->
+  <rect x="60" y="100" width="520" height="580" fill="#181818" rx="2"/>
+  <text x="90" y="140" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="11" letter-spacing="0.15em">FEATURED STONE FINISH</text>
+  <text x="90" y="180" fill="#d6d5cf" font-family="serif" font-size="28">Calacatta Vagli Polish</text>
+  <text x="90" y="220" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="14" width="460">Mined from the Apuan Alps. Characterized by subtle brecciated veins of amber and slate across warm white crystalline limestone.</text>
+  
+  <!-- Architectural drawing lines -->
+  <line x1="90" y1="280" x2="520" y2="280" stroke="#333333" stroke-width="1"/>
+  <text x="90" y="320" fill="#75746f" font-family="monospace" font-size="12">DENSITY: 2,710 KG/M³</text>
+  <text x="90" y="350" fill="#75746f" font-family="monospace" font-size="12">WATER ABSORPTION: 0.12%</text>
+  <text x="90" y="380" fill="#75746f" font-family="monospace" font-size="12">COMPRESSIVE STRENGTH: 138 MPA</text>
+
+  <rect x="620" y="100" width="520" height="280" fill="#2b2b2b" rx="2"/>
+  <text x="650" y="140" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="11">SLAB SPECIFICATION OVERVIEW</text>
+  <line x1="650" y1="180" x2="1100" y2="180" stroke="#3d3d3d" stroke-width="1"/>
+  <line x1="650" y1="220" x2="1100" y2="220" stroke="#3d3d3d" stroke-width="1"/>
+  <line x1="650" y1="260" x2="1100" y2="260" stroke="#3d3d3d" stroke-width="1"/>
+
+  <rect x="620" y="400" width="520" height="280" fill="#1d1d1d" rx="2"/>
+  <text x="650" y="440" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="11">SPECIFICATION INQUIRY ARCHITECTURE</text>
+  <text x="650" y="480" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="15">Structured Trade RFP Workflow</text>
+  <text x="650" y="520" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="13">Direct routing to regional stone masons and quantity surveyors.</text>
+</svg>

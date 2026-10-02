@@ -1,0 +1,37 @@
+<svg width="1400" height="900" viewBox="0 0 1400 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1400" height="900" fill="#1b1c1d" rx="4"/>
+  <!-- Top bar -->
+  <rect x="0" y="0" width="1400" height="50" fill="#232527"/>
+  <text x="40" y="32" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="13" font-weight="500">NORTHWIND FREIGHT // MANIFEST RECONCILIATION LEDGER // GATE 02</text>
+  
+  <rect x="40" y="90" width="1320" height="760" fill="#1f2022" rx="3"/>
+  <text x="80" y="140" fill="#75746f" font-family="monospace" font-size="12">WAYBILL NUMBER</text>
+  <text x="320" y="140" fill="#75746f" font-family="monospace" font-size="12">HAULAGE CARRIER</text>
+  <text x="620" y="140" fill="#75746f" font-family="monospace" font-size="12">CUSTOMS CLEARANCE CODE</text>
+  <text x="960" y="140" fill="#75746f" font-family="monospace" font-size="12">CONTAINER SEAL STATUS</text>
+  <text x="1200" y="140" fill="#75746f" font-family="monospace" font-size="12">STATUS</text>
+  <line x1="40" y1="160" x2="1360" y2="160" stroke="#2b2d30" stroke-width="1"/>
+
+  <!-- Row 1 -->
+  <text x="80" y="210" fill="#d6d5cf" font-family="monospace" font-size="14">WB-2026-90412</text>
+  <text x="320" y="210" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="14">Sahel Express Logistics Ltd</text>
+  <text x="620" y="210" fill="#8f8e89" font-family="monospace" font-size="14">ASYCUDA-CUSTOMS-APPROVED</text>
+  <text x="960" y="210" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="14">RFID Seal #99410 Intact</text>
+  <text x="1200" y="210" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="14">Cleared</text>
+  <line x1="40" y1="240" x2="1360" y2="240" stroke="#26282a" stroke-width="1"/>
+
+  <!-- Row 2 -->
+  <text x="80" y="290" fill="#d6d5cf" font-family="monospace" font-size="14">WB-2026-90413</text>
+  <text x="320" y="290" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="14">Volta Basin Haulers</text>
+  <text x="620" y="290" fill="#8f8e89" font-family="monospace" font-size="14">ASYCUDA-PENDING-INSPECT</text>
+  <text x="960" y="290" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="14">RFID Seal #99411 Verified</text>
+  <text x="1200" y="290" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="14">Inspection</text>
+  <line x1="40" y1="320" x2="1360" y2="320" stroke="#26282a" stroke-width="1"/>
+
+  <!-- Row 3 -->
+  <text x="80" y="370" fill="#d6d5cf" font-family="monospace" font-size="14">WB-2026-90414</text>
+  <text x="320" y="370" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="14">Apex Trans-Sahara Lines</text>
+  <text x="620" y="370" fill="#8f8e89" font-family="monospace" font-size="14">ASYCUDA-CUSTOMS-APPROVED</text>
+  <text x="960" y="370" fill="#b9b8b2" font-family="system-ui, sans-serif" font-size="14">RFID Seal #99412 Intact</text>
+  <text x="1200" y="370" fill="#d6d5cf" font-family="system-ui, sans-serif" font-size="14">Cleared</text>
+</svg>
