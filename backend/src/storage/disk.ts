@@ -1,4 +1,4 @@
-// backend/src/storage/disk.ts — Disk Storage Engine with Range Request Support
+// backend/src/storage/disk.ts — Persistent Disk Storage Engine with Range Request Support
 import fs from 'fs';
 import path from 'path';
 import { env } from '../config/env';
@@ -12,14 +12,15 @@ export interface FileRangeInfo {
 }
 
 /**
- * Initializes the upload directory structure.
+ * Initializes the persistent upload directory structure.
  */
 export function ensureUploadDirs(): void {
+  const baseDir = env.MEDIA_STORAGE_DIR || env.UPLOAD_DIR;
   const dirs = [
-    env.UPLOAD_DIR,
-    path.join(env.UPLOAD_DIR, 'images'),
-    path.join(env.UPLOAD_DIR, 'videos'),
-    path.join(env.UPLOAD_DIR, 'posters')
+    baseDir,
+    path.join(baseDir, 'images'),
+    path.join(baseDir, 'videos'),
+    path.join(baseDir, 'posters')
   ];
 
   for (const dir of dirs) {
@@ -30,21 +31,54 @@ export function ensureUploadDirs(): void {
 }
 
 /**
- * Resolves a safe absolute path inside UPLOAD_DIR preventing path traversal.
+ * Resolves a safe absolute path inside MEDIA_STORAGE_DIR preventing directory traversal.
+ * Also checks seed/bundled assets and auto-migrates them into persistent storage.
  */
 export function getSafeFilePath(relativePath: string): string | null {
+  const baseDir = env.MEDIA_STORAGE_DIR || env.UPLOAD_DIR;
   const cleanRelative = path.normalize(relativePath).replace(/^(\.\.[\/\\])+/, '');
-  const absolutePath = path.resolve(env.UPLOAD_DIR, cleanRelative);
+  const targetPath = path.resolve(baseDir, cleanRelative);
 
-  if (!absolutePath.startsWith(path.resolve(env.UPLOAD_DIR))) {
+  // Traversal protection
+  if (!targetPath.startsWith(path.resolve(baseDir))) {
     return null;
   }
 
-  return absolutePath;
+  // If file already exists in persistent storage, return it
+  if (fs.existsSync(targetPath)) {
+    return targetPath;
+  }
+
+  // Check fallback static bundled seed assets (e.g. from /public/media or /public)
+  const cwd = process.cwd();
+  const seedCandidates = [
+    path.resolve(cwd, 'public/media', cleanRelative),
+    path.resolve(cwd, 'public', cleanRelative),
+    path.resolve(cwd, 'public/media', path.basename(cleanRelative))
+  ];
+
+  for (const candidate of seedCandidates) {
+    if (fs.existsSync(candidate) && !fs.statSync(candidate).isDirectory()) {
+      try {
+        // Automatically sync initial seed assets into persistent storage
+        const targetDir = path.dirname(targetPath);
+        if (!fs.existsSync(targetDir)) {
+          fs.mkdirSync(targetDir, { recursive: true });
+        }
+        fs.copyFileSync(candidate, targetPath);
+        return targetPath;
+      } catch (err) {
+        console.warn(`[STORAGE] Could not copy seed asset ${candidate} to ${targetPath}:`, err);
+        return candidate;
+      }
+    }
+  }
+
+  return targetPath;
 }
 
 /**
- * Saves a buffer to disk.
+ * Saves a file buffer to persistent disk storage.
  */
 export async function saveFileToDisk(relativePath: string, data: Buffer): Promise<string> {
   ensureUploadDirs();
@@ -63,7 +97,7 @@ export async function saveFileToDisk(relativePath: string, data: Buffer): Promis
 }
 
 /**
- * Deletes a file from disk if it exists.
+ * Deletes a file from persistent disk storage if it exists.
  */
 export async function deleteFileFromDisk(relativePath: string): Promise<boolean> {
   const safePath = getSafeFilePath(relativePath);

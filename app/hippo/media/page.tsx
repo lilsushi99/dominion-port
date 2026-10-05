@@ -1,6 +1,6 @@
 'use client';
 
-// app/hippo/media/page.tsx — Media Asset Library
+// app/hippo/media/page.tsx — Media Asset Library with Live Hostinger Storage Diagnostics
 import React, { useState, useEffect } from 'react';
 import {
   Upload,
@@ -11,10 +11,35 @@ import {
   Video,
   ExternalLink,
   Check,
-  AlertTriangle
+  AlertTriangle,
+  HardDrive,
+  ShieldCheck,
+  ShieldAlert,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { useHippoAuth } from '@/components/admin/HippoAuthProvider';
 import { MediaRecord } from '@/backend/src/services/media.service';
+
+interface StorageDiagnostics {
+  status: 'healthy' | 'warning' | 'critical';
+  runtimeCwd: string;
+  mediaStorageDir: string;
+  publicUrlPrefix: string;
+  isWritable: boolean;
+  isInsideHbuilds: boolean;
+  isInsidePublicHtml: boolean;
+  isInsideAppTree: boolean;
+  isPersistentSafe: boolean;
+  stats: {
+    imagesCount: number;
+    videosCount: number;
+    postersCount: number;
+    totalFiles: number;
+    totalBytes: number;
+  };
+  warnings: string[];
+}
 
 export default function HippoMediaPage() {
   const { csrfToken } = useHippoAuth();
@@ -24,6 +49,10 @@ export default function HippoMediaPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+
+  // Storage Diagnostics State
+  const [storageInfo, setStorageInfo] = useState<StorageDiagnostics | null>(null);
+  const [showStorageDetails, setShowStorageDetails] = useState(false);
 
   // Edit Alt Modal
   const [altModal, setAltModal] = useState<MediaRecord | null>(null);
@@ -49,6 +78,15 @@ export default function HippoMediaPage() {
       .finally(() => setLoading(false));
   };
 
+  const loadStorageInfo = () => {
+    fetch('/api/v1/admin/media/storage-status')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.data) setStorageInfo(json.data);
+      })
+      .catch((err) => console.error(err));
+  };
+
   useEffect(() => {
     let mounted = true;
     const kindParam = kindFilter !== 'all' ? `?kind=${kindFilter}` : '';
@@ -61,6 +99,8 @@ export default function HippoMediaPage() {
       .finally(() => {
         if (mounted) setLoading(false);
       });
+
+    loadStorageInfo();
 
     return () => {
       mounted = false;
@@ -94,6 +134,7 @@ export default function HippoMediaPage() {
 
     setUploading(false);
     loadMedia();
+    loadStorageInfo();
     showToast(`${count} media file(s) uploaded!`);
   };
 
@@ -145,6 +186,7 @@ export default function HippoMediaPage() {
 
       setMediaList((prev) => prev.filter((m) => m.id !== deleteModal.id));
       setDeleteModal(null);
+      loadStorageInfo();
       showToast('Media file deleted');
     } catch {
       alert('Network error deleting media.');
@@ -185,6 +227,80 @@ export default function HippoMediaPage() {
           <input type="file" multiple onChange={handleUpload} className="hidden" />
         </label>
       </div>
+
+      {/* Hostinger Persistent Storage Diagnostics Card */}
+      {storageInfo && (
+        <div className="bg-[#fdfcff] border border-[#e4e3ea] rounded-2xl p-4 shadow-[0_1px_2px_rgba(22,21,28,0.04)]">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-xl ${storageInfo.isPersistentSafe ? 'bg-[#e3f6ec] text-[#12874f]' : 'bg-[#fff1dc] text-[#a35c00]'}`}>
+                <HardDrive size={18} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[13px] font-semibold text-[#16151c]">Persistent Storage</span>
+                  {storageInfo.isPersistentSafe ? (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 bg-[#e3f6ec] text-[#12874f] rounded-full">
+                      <ShieldCheck size={12} />
+                      Deployment-Safe (Outside hbuilds)
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 bg-[#fff1dc] text-[#a35c00] rounded-full">
+                      <ShieldAlert size={12} />
+                      Review Storage Path
+                    </span>
+                  )}
+                </div>
+                <div className="text-[12px] font-mono text-[#86858f] truncate max-w-[500px] mt-0.5" title={storageInfo.mediaStorageDir}>
+                  {storageInfo.mediaStorageDir}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-3 text-[12px] text-[#4a4955] border-l border-[#e4e3ea] pl-4">
+                <span>{storageInfo.stats.imagesCount} images</span>
+                <span>·</span>
+                <span>{storageInfo.stats.videosCount} videos</span>
+                <span>·</span>
+                <span className="font-semibold text-[#16151c]">{formatSize(storageInfo.stats.totalBytes)}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowStorageDetails(!showStorageDetails)}
+                className="p-1.5 text-[#86858f] hover:text-[#16151c] hover:bg-[#f6f5fa] rounded-lg transition-colors"
+                title="Toggle storage details"
+              >
+                {showStorageDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </button>
+            </div>
+          </div>
+
+          {showStorageDetails && (
+            <div className="mt-3 pt-3 border-t border-[#e4e3ea] grid grid-cols-1 sm:grid-cols-2 gap-3 text-[12px]">
+              <div className="bg-[#f6f5fa] p-2.5 rounded-xl space-y-1">
+                <div className="text-[#86858f]">Node.js Runtime Working Directory:</div>
+                <div className="font-mono text-[#16151c] break-all">{storageInfo.runtimeCwd}</div>
+              </div>
+              <div className="bg-[#f6f5fa] p-2.5 rounded-xl space-y-1">
+                <div className="text-[#86858f]">Public Browser URL Prefix:</div>
+                <div className="font-mono text-[#16151c]">{`${storageInfo.publicUrlPrefix}/* (Browser never receives internal OS paths)`}</div>
+              </div>
+
+              {storageInfo.warnings.length > 0 && (
+                <div className="sm:col-span-2 p-2.5 bg-[#fff1dc] text-[#a35c00] rounded-xl flex items-start gap-2">
+                  <AlertTriangle size={15} className="shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    {storageInfo.warnings.map((w, i) => (
+                      <div key={i}>{w}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Filters & Search */}
       <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -250,40 +366,64 @@ export default function HippoMediaPage() {
                 {/* Visual Preview */}
                 <div className="relative aspect-video bg-[#16151c] flex items-center justify-center overflow-hidden">
                   {item.kind === 'video' ? (
-                    <video src={item.public_url} className="w-full h-full object-cover" />
+                    <video
+                      src={item.public_url}
+                      className="w-full h-full object-cover"
+                      muted
+                      playsInline
+                      preload="metadata"
+                    />
                   ) : (
-                    <img src={item.public_url} alt={item.alt || ''} className="w-full h-full object-cover" />
+                    <img
+                      src={item.public_url}
+                      alt={item.alt || item.original_name}
+                      className="w-full h-full object-cover"
+                    />
                   )}
-                  <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-[#16151c]/70 text-white text-[10px] uppercase font-mono tracking-wider">
-                    {item.kind}
-                  </span>
-                </div>
 
-                {/* Info Block */}
-                <div className="p-3 flex-1 flex flex-col justify-between">
-                  <div>
-                    <div className="text-[12px] font-semibold text-[#16151c] truncate" title={item.original_name}>
-                      {item.original_name}
-                    </div>
-                    <div className="text-[11px] text-[#86858f] mt-0.5 flex items-center gap-1.5">
-                      <span>{formatSize(item.size_bytes)}</span>
-                      {item.width && item.height && (
-                        <>
-                          <span>·</span>
-                          <span>{item.width}×{item.height}</span>
-                        </>
-                      )}
-                    </div>
+                  <div className="absolute top-1.5 left-1.5 bg-[#16151c]/80 text-white text-[10px] font-medium px-1.5 py-0.5 rounded flex items-center gap-1">
+                    {item.kind === 'video' ? <Video size={10} /> : <ImageIcon size={10} />}
+                    <span className="uppercase">{item.mime.split('/')[1] || item.kind}</span>
                   </div>
 
-                  <div className="mt-2 pt-2 border-t border-[#e4e3ea] flex items-center justify-between">
-                    <span
-                      className={`text-[11px] font-medium ${
-                        (item.usage_count || 0) > 0 ? 'text-[#12874f]' : 'text-[#86858f]'
-                      }`}
+                  {item.usage_count !== undefined && item.usage_count > 0 && (
+                    <div className="absolute top-1.5 right-1.5 bg-[#5b4be0] text-white text-[10px] font-medium px-1.5 py-0.5 rounded shadow-2xs">
+                      {item.usage_count} {item.usage_count === 1 ? 'use' : 'uses'}
+                    </div>
+                  )}
+                </div>
+
+                {/* Info & Actions */}
+                <div className="p-3 space-y-1.5">
+                  <div className="text-[12px] font-semibold text-[#16151c] truncate" title={item.original_name}>
+                    {item.original_name}
+                  </div>
+                  <div className="text-[11px] text-[#86858f] flex items-center justify-between">
+                    <span>{formatSize(item.size_bytes)}</span>
+                    {item.width && item.height && (
+                      <span>
+                        {item.width}×{item.height}
+                      </span>
+                    )}
+                  </div>
+
+                  {item.alt && (
+                    <div className="text-[11px] text-[#4a4955] italic truncate" title={item.alt}>
+                      &ldquo;{item.alt}&rdquo;
+                    </div>
+                  )}
+
+                  {/* Actions Bar */}
+                  <div className="pt-2 border-t border-[#e4e3ea] flex items-center justify-between">
+                    <a
+                      href={item.public_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1 rounded text-[#86858f] hover:text-[#16151c] hover:bg-[#e4e3ea]/60"
+                      title="Open public media URL"
                     >
-                      {item.usage_count || 0} uses
-                    </span>
+                      <ExternalLink size={13} />
+                    </a>
 
                     <div className="flex items-center gap-1">
                       <button
@@ -291,27 +431,18 @@ export default function HippoMediaPage() {
                           setAltModal(item);
                           setAltText(item.alt || '');
                         }}
-                        className="p-1 text-[#4a4955] hover:bg-[#e4e3ea] rounded"
-                        title="Edit alt text"
+                        className="p-1 rounded text-[#86858f] hover:text-[#16151c] hover:bg-[#e4e3ea]/60"
+                        title="Edit Alt description"
                       >
                         <Edit2 size={13} />
                       </button>
-                      <a
-                        href={item.public_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-1 text-[#4a4955] hover:bg-[#e4e3ea] rounded"
-                        title="Open file"
-                      >
-                        <ExternalLink size={13} />
-                      </a>
                       <button
                         onClick={() => {
                           setDeleteModal(item);
                           setInUseError(null);
                         }}
-                        className="p-1 text-[#d92d4a] hover:bg-[#fde8ec] rounded"
-                        title="Delete asset"
+                        className="p-1 rounded text-[#86858f] hover:text-[#d92d4a] hover:bg-[#fde8ec]"
+                        title="Delete media file"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -324,79 +455,80 @@ export default function HippoMediaPage() {
         )}
       </div>
 
-      {/* Edit Alt Text Modal */}
+      {/* Edit Alt Modal */}
       {altModal && (
         <div className="fixed inset-0 z-50 bg-[#16151c]/40 flex items-center justify-center p-4">
-          <div className="bg-[#fdfcff] rounded-2xl border border-[#e4e3ea] p-6 max-w-[440px] w-full shadow-xl">
-            <h3 className="text-[18px] font-semibold text-[#16151c]">Edit Accessibility Alt Text</h3>
-            <p className="text-[12px] text-[#86858f] mt-1 truncate">{altModal.original_name}</p>
-
-            <form onSubmit={handleUpdateAlt} className="space-y-4 mt-4">
-              <div>
-                <label className="block text-[13px] font-medium text-[#4a4955] mb-1">
-                  Alt Description
-                </label>
-                <textarea
-                  rows={3}
-                  value={altText}
-                  onChange={(e) => setAltText(e.target.value)}
-                  placeholder="Describe this visual clearly for screen readers..."
-                  className="w-full p-3 bg-[#fdfcff] border border-[#e4e3ea] rounded-xl text-[13px] text-[#16151c] outline-none"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setAltModal(null)}
-                  className="px-4 py-2 text-[13px] font-medium text-[#4a4955] hover:bg-[#f6f5fa] rounded-lg"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-[13px] font-medium bg-[#5b4be0] hover:bg-[#4d3ed1] text-white rounded-lg shadow-xs"
-                >
-                  Save alt text
-                </button>
-              </div>
-            </form>
-          </div>
+          <form
+            onSubmit={handleUpdateAlt}
+            className="bg-[#fdfcff] rounded-2xl border border-[#e4e3ea] p-6 max-w-[440px] w-full shadow-xl space-y-4"
+          >
+            <h3 className="text-[17px] font-semibold text-[#16151c]">Edit Accessibility Alt Description</h3>
+            <p className="text-[12px] text-[#86858f]">
+              File: <span className="font-mono text-[#16151c]">{altModal.original_name}</span>
+            </p>
+            <textarea
+              rows={3}
+              value={altText}
+              onChange={(e) => setAltText(e.target.value)}
+              placeholder="Describe this media for accessibility and search..."
+              className="w-full p-3 bg-[#f6f5fa] border border-[#e4e3ea] rounded-xl text-[13px] text-[#16151c] outline-none"
+            />
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setAltModal(null)}
+                className="px-4 py-2 text-[13px] font-medium text-[#4a4955] hover:bg-[#f6f5fa] rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 text-[13px] font-medium bg-[#5b4be0] hover:bg-[#4d3ed1] text-white rounded-lg shadow-xs"
+              >
+                Save description
+              </button>
+            </div>
+          </form>
         </div>
       )}
 
-      {/* Delete Safe Confirmation Modal */}
+      {/* Delete Confirmation Safe Modal */}
       {deleteModal && (
         <div className="fixed inset-0 z-50 bg-[#16151c]/40 flex items-center justify-center p-4">
-          <div className="bg-[#fdfcff] rounded-2xl border border-[#e4e3ea] p-6 max-w-[440px] w-full shadow-xl">
-            <h3 className="text-[18px] font-semibold text-[#16151c]">Delete Media File</h3>
-            
-            {inUseError ? (
-              <div className="mt-3 p-3 bg-[#fde8ec] border border-[#d92d4a]/20 rounded-xl text-[13px] text-[#d92d4a] flex items-start gap-2">
-                <AlertTriangle size={18} className="shrink-0 mt-0.5" />
-                <span>{inUseError}</span>
+          <div className="bg-[#fdfcff] rounded-2xl border border-[#e4e3ea] p-6 max-w-[440px] w-full shadow-xl space-y-4">
+            <h3 className="text-[17px] font-semibold text-[#16151c]">Delete Media File</h3>
+            <p className="text-[13px] text-[#4a4955] leading-relaxed">
+              Are you sure you want to permanently delete <strong className="text-[#16151c]">{deleteModal.original_name}</strong>?
+            </p>
+
+            {inUseError && (
+              <div className="p-3 bg-[#fde8ec] border border-[#f5b8c4] rounded-xl text-[12px] text-[#d92d4a] flex items-start gap-2">
+                <AlertTriangle size={15} className="shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-semibold">Cannot delete media in use:</div>
+                  <div className="mt-0.5">{inUseError}</div>
+                </div>
               </div>
-            ) : (
-              <p className="text-[13px] text-[#4a4955] mt-2 leading-relaxed">
-                Are you sure you want to delete <strong className="text-[#16151c]">&ldquo;{deleteModal.original_name}&rdquo;</strong>? This will permanently delete the file from the disk storage.
-              </p>
             )}
 
-            <div className="flex items-center justify-end gap-3 mt-6">
+            <div className="flex items-center justify-end gap-3 pt-2">
               <button
-                onClick={() => setDeleteModal(null)}
+                type="button"
+                onClick={() => {
+                  setDeleteModal(null);
+                  setInUseError(null);
+                }}
                 className="px-4 py-2 text-[13px] font-medium text-[#4a4955] hover:bg-[#f6f5fa] rounded-lg"
               >
-                {inUseError ? 'Close' : 'Cancel'}
+                Cancel
               </button>
-              {!inUseError && (
-                <button
-                  onClick={handleDelete}
-                  className="px-4 py-2 text-[13px] font-medium bg-[#d92d4a] hover:bg-[#c2203c] text-white rounded-lg"
-                >
-                  Delete asset
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="px-4 py-2 text-[13px] font-medium bg-[#d92d4a] hover:bg-[#c2203c] text-white rounded-lg shadow-xs"
+              >
+                Delete permanently
+              </button>
             </div>
           </div>
         </div>
