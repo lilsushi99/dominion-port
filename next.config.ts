@@ -8,8 +8,9 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  // Allow access to remote image placeholder.
+  // Allow access to remote image placeholder and direct media streaming
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',

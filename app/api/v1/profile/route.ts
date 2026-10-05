@@ -6,10 +6,10 @@ export async function GET() {
   try {
     const profile = await getPublicProfile();
     return NextResponse.json({ data: profile });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[API GET PROFILE ERROR]', error);
     return NextResponse.json(
-      { error: { code: 'SERVER_ERROR', message: 'Failed to load profile data.' } },
+      { error: { code: 'SERVER_ERROR', message: error?.message || 'Failed to load profile data.' } },
       { status: 500 }
     );
   }

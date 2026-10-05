@@ -10,10 +10,13 @@ export interface Company {
 
 export interface ContactLink {
   id: number;
-  type: 'email' | 'linkedin' | 'whatsapp' | 'x';
   label: string;
   url: string;
   sort_order: number;
+  type?: string;
+  presentation_mode?: 'text' | 'icon';
+  platform?: string | null;
+  is_active?: boolean;
 }
 
 export interface Profile {
@@ -31,6 +34,10 @@ export interface Category {
   slug: string;
   name: string;
   sort_order: number;
+  content_type?: 'project' | 'paper';
+  is_active?: boolean;
+  item_count?: number;
+  cover_path?: string | null;
 }
 
 export interface MediaPreview {

@@ -1,6 +1,6 @@
 'use client';
 
-// components/CategorySwitch.tsx
+// components/CategorySwitch.tsx — Minimalist Editorial Interactive Category Filters
 import React from 'react';
 import { Category } from '@/lib/types';
 
@@ -16,33 +16,35 @@ export function CategorySwitch({
   onSelectCategory
 }: CategorySwitchProps) {
   return (
-    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-10 text-[14px]">
+    <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 mb-10 text-[12px] sm:text-[13px] font-mono">
+      {/* ALL Filter */}
       <button
         type="button"
         onClick={() => onSelectCategory(null)}
-        className={`cursor-pointer transition-colors duration-150 py-1 ${
+        className={`cursor-pointer px-3 py-1.5 rounded-lg border transition-all duration-150 uppercase tracking-wider ${
           activeCategory === null
-            ? 'text-[#d6d5cf] font-medium underline underline-offset-[4px]'
-            : 'text-[#75746f] hover:text-[#b9b8b2]'
+            ? 'bg-[#000000]/10 dark:bg-[#ffffff]/10 text-[#171717] dark:text-[#ffffff] border-[#000000]/20 dark:border-[#ffffff]/25 font-semibold shadow-2xs'
+            : 'bg-transparent text-[#75746f] dark:text-[#8f8e89] border-transparent hover:border-[#000000]/10 dark:hover:border-[#ffffff]/10 hover:text-[#171717] dark:hover:text-[#d6d5cf]'
         }`}
       >
-        all
+        [ all ]
       </button>
 
+      {/* Dynamic Project Categories + Papers */}
       {categories.map((cat) => {
         const isActive = activeCategory === cat.slug;
         return (
           <button
-            key={cat.id}
+            key={cat.id || cat.slug}
             type="button"
             onClick={() => onSelectCategory(cat.slug)}
-            className={`cursor-pointer transition-colors duration-150 py-1 ${
+            className={`cursor-pointer px-3 py-1.5 rounded-lg border transition-all duration-150 uppercase tracking-wider ${
               isActive
-                ? 'text-[#d6d5cf] font-medium underline underline-offset-[4px]'
-                : 'text-[#75746f] hover:text-[#b9b8b2]'
+                ? 'bg-[#000000]/10 dark:bg-[#ffffff]/10 text-[#171717] dark:text-[#ffffff] border-[#000000]/20 dark:border-[#ffffff]/25 font-semibold shadow-2xs'
+                : 'bg-transparent text-[#75746f] dark:text-[#8f8e89] border-transparent hover:border-[#000000]/10 dark:hover:border-[#ffffff]/10 hover:text-[#171717] dark:hover:text-[#d6d5cf]'
             }`}
           >
-            {cat.name}
+            [ {cat.name} ]
           </button>
         );
       })}

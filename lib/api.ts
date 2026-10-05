@@ -2,15 +2,24 @@
 import { getPublicProfile } from '@/backend/src/services/cms.service';
 import { listCategories } from '@/backend/src/services/categories.service';
 import { listProjects, getProjectBySlug as getProjectBySlugService } from '@/backend/src/services/projects.service';
+import { listPapers, getPaperBySlug as getPaperBySlugService } from '@/backend/src/services/papers.service';
 import { findCurrentSlug } from '@/backend/src/services/slug.service';
 import { pool } from '@/backend/src/db/pool';
+import { Category, ListItem } from '@/lib/types';
 
 export interface SiteProfile {
   name: string;
   intro_html: string;
   sign_off: string;
   list_heading: string;
-  contact_links: Array<{ id: number; label: string; url: string; sort_order: number }>;
+  contact_links: Array<{
+    id: number;
+    label: string;
+    url: string;
+    sort_order: number;
+    presentation_mode?: 'text' | 'icon';
+    platform?: string | null;
+  }>;
   footer: {
     year: number;
     copyright_text: string;
@@ -36,13 +45,13 @@ export async function getProfile(): Promise<SiteProfile> {
     return {
       name: 'dominion',
       intro_html: '<p>hey, i\'m dominion. i design and build web software, design systems, and data tools.</p>',
-      sign_off: 'love,\ndominion',
+      sign_off: '',
       list_heading: "p.s. things i've made and written…",
       contact_links: [
-        { id: 1, label: 'email me', url: 'mailto:dominion@example.com', sort_order: 1 },
-        { id: 2, label: 'text me on linkedin', url: 'https://linkedin.com/in/dominion', sort_order: 2 },
-        { id: 3, label: 'whatsapp me', url: 'https://wa.me/1234567890', sort_order: 3 },
-        { id: 4, label: 'find me on x', url: 'https://x.com/dominion', sort_order: 4 }
+        { id: 1, label: 'email me', url: 'mailto:dominion@example.com', sort_order: 1, presentation_mode: 'text' },
+        { id: 2, label: 'text me on linkedin', url: 'https://linkedin.com/in/dominion', sort_order: 2, presentation_mode: 'text' },
+        { id: 3, label: 'whatsapp me', url: 'https://wa.me/1234567890', sort_order: 3, presentation_mode: 'text' },
+        { id: 4, label: 'find me on x', url: 'https://x.com/dominion', sort_order: 4, presentation_mode: 'text' }
       ],
       footer: {
         year: 2026,
@@ -55,31 +64,87 @@ export async function getProfile(): Promise<SiteProfile> {
   }
 }
 
-export async function getCategories(): Promise<Array<{ id: number; slug: string; name: string; sort_order: number; content_type: string }>> {
+/**
+ * Returns top-level Work category tabs (Project categories + Papers).
+ * Paper subcategories are excluded from top-level filter tabs (Phase 4).
+ */
+export async function getCategories(): Promise<Category[]> {
   try {
-    const cats = await listCategories({ includeInactive: false });
-    return cats.map(c => ({
+    const projectCats = await listCategories({ contentType: 'project', includeInactive: false });
+    const formatted: Category[] = projectCats.map((c) => ({
       id: c.id,
       slug: c.slug,
       name: c.name,
       sort_order: c.sort_order,
-      content_type: c.content_type
+      content_type: 'project',
+      is_active: c.is_active
     }));
+
+    // Append Papers tab as a top-level work filter
+    formatted.push({
+      id: 999999,
+      slug: 'papers',
+      name: 'papers',
+      sort_order: 9999,
+      content_type: 'paper',
+      is_active: true
+    });
+
+    return formatted;
   } catch (err) {
     console.warn('[API] getCategories DB error:', err);
+    return [
+      { id: 1, slug: 'web-development', name: 'web development', sort_order: 1, content_type: 'project' },
+      { id: 2, slug: 'product-design', name: 'product design', sort_order: 2, content_type: 'project' },
+      { id: 3, slug: 'dashboards', name: 'dashboards', sort_order: 3, content_type: 'project' },
+      { id: 999999, slug: 'papers', name: 'papers', sort_order: 4, content_type: 'paper' }
+    ];
+  }
+}
+
+/**
+ * Returns Paper subcategories with item counts for Level 1 Papers browsing (Phase 5).
+ */
+export async function getPaperCategories(): Promise<Category[]> {
+  try {
+    const [rows] = await pool.query<any[]>(
+      `SELECT c.*,
+              (SELECT COUNT(*) FROM papers p WHERE p.category_id = c.id AND p.status = 'published') as item_count,
+              m.relative_path as cover_path
+       FROM categories c
+       LEFT JOIN media m ON c.id = 0
+       WHERE c.content_type = 'paper' AND c.is_active = 1
+       ORDER BY c.sort_order ASC, c.id ASC`
+    );
+
+    return rows.map((r: any) => ({
+      id: r.id,
+      slug: r.slug,
+      name: r.name,
+      sort_order: r.sort_order,
+      content_type: 'paper' as const,
+      is_active: Boolean(r.is_active),
+      item_count: Number(r.item_count || 0),
+      cover_path: r.cover_path ? (r.cover_path.startsWith('/') ? r.cover_path : `/media/${r.cover_path}`) : null
+    }));
+  } catch (err) {
+    console.warn('[API] getPaperCategories DB error:', err);
     return [];
   }
 }
 
-export async function getItems(categorySlug?: string): Promise<any[]> {
+/**
+ * Returns published projects and papers for homepage list.
+ */
+export async function getItems(categorySlug?: string): Promise<ListItem[]> {
   try {
     const projects = await listProjects({
-      categorySlug: categorySlug === 'papers' ? undefined : categorySlug,
-      status: 'published'
+      categorySlug: categorySlug && categorySlug !== 'papers' ? categorySlug : undefined,
+      status: 'published',
+      includeDrafts: false
     });
 
-    const projectItems = projects.map(p => {
-      // For preview in list row, prefer poster_media, or primary_media if it is an image
+    const projectItems: ListItem[] = projects.map((p) => {
       let previewImage = p.poster_media;
       if (!previewImage && p.primary_media && p.primary_media.kind === 'image') {
         previewImage = p.primary_media;
@@ -90,8 +155,8 @@ export async function getItems(categorySlug?: string): Promise<any[]> {
         previewPath = previewImage.public_url.startsWith('http') || previewImage.public_url.startsWith('/')
           ? previewImage.public_url
           : `/${previewImage.public_url}`;
-      } else if (p.poster_media_id) {
-        previewPath = `/media/sample-poster.svg`;
+      } else if (p.primary_media_id && p.primary_media) {
+        previewPath = p.primary_media.public_url || `/media/${p.primary_media.relative_path}`;
       }
 
       return {
@@ -118,17 +183,13 @@ export async function getItems(categorySlug?: string): Promise<any[]> {
 
     // If papers category requested or all items
     if (!categorySlug || categorySlug === 'papers') {
-      const [paperRows] = await pool.query<any[]>(
-        `SELECT pap.*, c.slug as category_slug,
-                m.relative_path as cover_path, m.alt as cover_alt, m.width as cover_width, m.height as cover_height
-         FROM papers pap
-         INNER JOIN categories c ON pap.category_id = c.id
-         LEFT JOIN media m ON pap.cover_media_id = m.id
-         WHERE pap.status = 'published'
-         ORDER BY pap.pub_year DESC, pap.created_at DESC`
-      );
+      const papers = await listPapers({
+        categorySlug: categorySlug === 'papers' ? undefined : categorySlug,
+        status: 'published',
+        includeDrafts: false
+      });
 
-      const paperItems = paperRows.map(pap => ({
+      const paperItems: ListItem[] = papers.map((pap) => ({
         id: pap.id,
         slug: pap.slug,
         year: pap.pub_year,
@@ -138,12 +199,12 @@ export async function getItems(categorySlug?: string): Promise<any[]> {
         category_slug: 'papers',
         href: `/papers/${pap.slug}`,
         is_external: false,
-        preview: pap.cover_path
+        preview: pap.cover_media
           ? {
-              path: pap.cover_path.startsWith('http') ? pap.cover_path : `/media/${pap.cover_path.replace(/^\/+/, '')}`,
-              alt: pap.cover_alt || pap.title,
-              width: pap.cover_width,
-              height: pap.cover_height
+              path: pap.cover_media.public_url || `/media/${pap.cover_media.relative_path}`,
+              alt: pap.cover_media.alt || pap.title,
+              width: pap.cover_media.width || 120,
+              height: pap.cover_media.height || 80
             }
           : null
       }));
@@ -158,6 +219,23 @@ export async function getItems(categorySlug?: string): Promise<any[]> {
     return projectItems;
   } catch (err) {
     console.warn('[API] getItems DB query error:', err);
+    return [];
+  }
+}
+
+/**
+ * Returns all published papers with category metadata.
+ */
+export async function getAllPapers(categorySlug?: string): Promise<any[]> {
+  try {
+    const papers = await listPapers({
+      categorySlug: categorySlug || undefined,
+      status: 'published',
+      includeDrafts: false
+    });
+    return papers;
+  } catch (err) {
+    console.warn('[API] getAllPapers error:', err);
     return [];
   }
 }
@@ -177,32 +255,30 @@ export async function getProjectBySlug(slug: string): Promise<any | null> {
 
 export async function getArticleBySlug(slug: string): Promise<any | null> {
   try {
-    const [rows] = await pool.query<any[]>(
-      'SELECT * FROM papers WHERE slug = ? AND status = \'published\' LIMIT 1',
-      [slug]
-    );
-
-    if (!rows || rows.length === 0) {
+    const paper = await getPaperBySlugService(slug);
+    if (!paper || paper.status !== 'published') {
       const redirectSlug = await findCurrentSlug('paper', slug);
       if (redirectSlug && redirectSlug !== slug) {
         return { redirect: true, redirectSlug };
       }
       return null;
     }
-    const r = rows[0];
-
-    // Format blocks or HTML for ArticleBody component
-    const content = typeof r.content_json === 'string' ? JSON.parse(r.content_json) : r.content_json;
 
     return {
-      id: r.id,
-      slug: r.slug,
-      year: r.pub_year,
-      published_at: r.published_at ? new Date(r.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : String(r.pub_year),
-      title: r.title,
-      summary: r.summary || '',
-      content_html: r.content_html,
-      blocks: content?.content || []
+      id: paper.id,
+      slug: paper.slug,
+      year: paper.pub_year,
+      published_at: paper.published_at
+        ? new Date(paper.published_at).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })
+        : String(paper.pub_year),
+      title: paper.title,
+      summary: paper.summary || '',
+      content_html: paper.content_html,
+      blocks: paper.content_json?.content || []
     };
   } catch (err) {
     console.warn('[API] getArticleBySlug DB query error:', err);

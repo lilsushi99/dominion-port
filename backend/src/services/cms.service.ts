@@ -19,6 +19,8 @@ export interface CtaLink {
   id: number;
   label: string;
   url: string;
+  presentation_mode?: 'text' | 'icon';
+  platform?: string | null;
   sort_order: number;
   is_active: boolean;
 }
@@ -89,7 +91,7 @@ export async function getHomeContent(): Promise<HomeContent> {
       id: 1,
       body_json: {},
       body_html: '',
-      sign_off: "love,\ndominion",
+      sign_off: '',
       updated_at: new Date().toISOString()
     };
   }
@@ -98,7 +100,7 @@ export async function getHomeContent(): Promise<HomeContent> {
     id: row.id,
     body_json: typeof row.body_json === 'string' ? JSON.parse(row.body_json) : row.body_json,
     body_html: row.body_html,
-    sign_off: row.sign_off,
+    sign_off: row.sign_off || '',
     updated_at: row.updated_at
   };
 }
@@ -109,9 +111,10 @@ export async function getHomeContent(): Promise<HomeContent> {
 export async function updateHomeContent(
   body_json: any,
   body_html: string,
-  sign_off: string
+  sign_off?: string | null
 ): Promise<HomeContent> {
   const jsonString = typeof body_json === 'string' ? body_json : JSON.stringify(body_json);
+  const cleanSignOff = (sign_off || '').trim();
 
   await pool.query(
     `INSERT INTO home_content (id, body_json, body_html, sign_off)
@@ -120,7 +123,7 @@ export async function updateHomeContent(
        body_json = VALUES(body_json),
        body_html = VALUES(body_html),
        sign_off = VALUES(sign_off)`,
-    [jsonString, body_html, sign_off.trim()]
+    [jsonString, body_html, cleanSignOff]
   );
 
   return getHomeContent();
@@ -139,6 +142,8 @@ export async function listCtaLinks(includeInactive = false): Promise<CtaLink[]> 
     id: r.id,
     label: r.label,
     url: r.url,
+    presentation_mode: r.presentation_mode || 'text',
+    platform: r.platform || null,
     sort_order: r.sort_order,
     is_active: Boolean(r.is_active)
   }));
@@ -151,7 +156,9 @@ export async function createCtaLink(
   label: string,
   url: string,
   sort_order?: number,
-  is_active = true
+  is_active = true,
+  presentation_mode: 'text' | 'icon' = 'text',
+  platform?: string | null
 ): Promise<CtaLink> {
   let order = sort_order;
   if (order === undefined) {
@@ -160,8 +167,8 @@ export async function createCtaLink(
   }
 
   const [result] = await pool.query<any>(
-    'INSERT INTO cta_links (label, url, sort_order, is_active) VALUES (?, ?, ?, ?)',
-    [label.trim(), url.trim(), order, is_active ? 1 : 0]
+    'INSERT INTO cta_links (label, url, sort_order, is_active, presentation_mode, platform) VALUES (?, ?, ?, ?, ?, ?)',
+    [label.trim(), url.trim(), order, is_active ? 1 : 0, presentation_mode, platform || null]
   );
 
   const [rows] = await pool.query<any[]>('SELECT * FROM cta_links WHERE id = ?', [result.insertId]);
@@ -170,6 +177,8 @@ export async function createCtaLink(
     id: r.id,
     label: r.label,
     url: r.url,
+    presentation_mode: r.presentation_mode || 'text',
+    platform: r.platform || null,
     sort_order: r.sort_order,
     is_active: Boolean(r.is_active)
   };
@@ -183,11 +192,13 @@ export async function updateCtaLink(
   label: string,
   url: string,
   sort_order: number,
-  is_active: boolean
+  is_active: boolean,
+  presentation_mode: 'text' | 'icon' = 'text',
+  platform?: string | null
 ): Promise<CtaLink | null> {
   await pool.query(
-    'UPDATE cta_links SET label = ?, url = ?, sort_order = ?, is_active = ? WHERE id = ?',
-    [label.trim(), url.trim(), sort_order, is_active ? 1 : 0, id]
+    'UPDATE cta_links SET label = ?, url = ?, sort_order = ?, is_active = ?, presentation_mode = ?, platform = ? WHERE id = ?',
+    [label.trim(), url.trim(), sort_order, is_active ? 1 : 0, presentation_mode, platform || null, id]
   );
 
   const [rows] = await pool.query<any[]>('SELECT * FROM cta_links WHERE id = ?', [id]);
@@ -197,9 +208,53 @@ export async function updateCtaLink(
     id: r.id,
     label: r.label,
     url: r.url,
+    presentation_mode: r.presentation_mode || 'text',
+    platform: r.platform || null,
     sort_order: r.sort_order,
     is_active: Boolean(r.is_active)
   };
+}
+
+/**
+ * Batch saves CTA links (reorder, active toggles, inline changes).
+ */
+export async function batchSaveCtaLinks(links: Array<Partial<CtaLink> & { id: number }>): Promise<CtaLink[]> {
+  for (const link of links) {
+    const updates: string[] = [];
+    const params: any[] = [];
+
+    if (link.label !== undefined) {
+      updates.push('label = ?');
+      params.push(link.label.trim());
+    }
+    if (link.url !== undefined) {
+      updates.push('url = ?');
+      params.push(link.url.trim());
+    }
+    if (link.sort_order !== undefined) {
+      updates.push('sort_order = ?');
+      params.push(link.sort_order);
+    }
+    if (link.is_active !== undefined) {
+      updates.push('is_active = ?');
+      params.push(link.is_active ? 1 : 0);
+    }
+    if (link.presentation_mode !== undefined) {
+      updates.push('presentation_mode = ?');
+      params.push(link.presentation_mode);
+    }
+    if (link.platform !== undefined) {
+      updates.push('platform = ?');
+      params.push(link.platform);
+    }
+
+    if (updates.length > 0) {
+      params.push(link.id);
+      await pool.query(`UPDATE cta_links SET ${updates.join(', ')} WHERE id = ?`, params);
+    }
+  }
+
+  return listCtaLinks(true);
 }
 
 /**

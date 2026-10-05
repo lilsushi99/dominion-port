@@ -49,18 +49,23 @@ export function getSafeFilePath(relativePath: string): string | null {
     return targetPath;
   }
 
-  // Check fallback static bundled seed assets (e.g. from /public/media or /public)
+  // Check fallback static bundled seed assets (e.g. from /public/seed_media or /public)
   const cwd = process.cwd();
+  const baseName = path.basename(cleanRelative);
   const seedCandidates = [
+    path.resolve(cwd, 'public/seed_media', cleanRelative),
+    path.resolve(cwd, 'public/seed_media/posters', baseName),
+    path.resolve(cwd, 'public/seed_media/previews', baseName),
+    path.resolve(cwd, 'public/seed_media/gallery', baseName),
+    path.resolve(cwd, 'public/seed_media/dashboards', baseName),
     path.resolve(cwd, 'public/media', cleanRelative),
     path.resolve(cwd, 'public', cleanRelative),
-    path.resolve(cwd, 'public/media', path.basename(cleanRelative))
+    path.resolve(cwd, 'public/media', baseName)
   ];
 
   for (const candidate of seedCandidates) {
     if (fs.existsSync(candidate) && !fs.statSync(candidate).isDirectory()) {
       try {
-        // Automatically sync initial seed assets into persistent storage
         const targetDir = path.dirname(targetPath);
         if (!fs.existsSync(targetDir)) {
           fs.mkdirSync(targetDir, { recursive: true });
@@ -71,6 +76,26 @@ export function getSafeFilePath(relativePath: string): string | null {
         console.warn(`[STORAGE] Could not copy seed asset ${candidate} to ${targetPath}:`, err);
         return candidate;
       }
+    }
+  }
+
+  // If a sample SVG is requested and missing, generate a clean editorial SVG
+  if (baseName.endsWith('.svg')) {
+    try {
+      const targetDir = path.dirname(targetPath);
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+      }
+      const label = baseName.replace(/\.svg$/, '').replace(/[-_]/g, ' ');
+      const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750" fill="none">
+  <rect width="1200" height="750" fill="#1c1b22"/>
+  <rect x="40" y="40" width="1120" height="670" rx="8" stroke="#31303d" stroke-width="2" stroke-dasharray="8 8"/>
+  <text x="600" y="375" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="24" font-weight="500" text-anchor="middle" dominant-baseline="middle">${label}</text>
+</svg>`;
+      fs.writeFileSync(targetPath, svgContent, 'utf-8');
+      return targetPath;
+    } catch (err) {
+      console.warn(`[STORAGE] Could not create fallback SVG ${targetPath}:`, err);
     }
   }
 

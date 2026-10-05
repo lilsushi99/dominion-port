@@ -34,6 +34,7 @@ export function PaperForm({ paper, isNew = false }: PaperFormProps) {
   // Form State
   const [title, setTitle] = useState(paper?.title || '');
   const [slug, setSlug] = useState(paper?.slug || '');
+  const [slugManual, setSlugManual] = useState(!isNew && Boolean(paper?.slug));
   const [pubYear, setPubYear] = useState<number>(paper?.pub_year || 2026);
   const [pubMonth, setPubMonth] = useState<number | ''>(paper?.pub_month || '');
   const [pubDay, setPubDay] = useState<number | ''>(paper?.pub_day || '');
@@ -249,8 +250,18 @@ export function PaperForm({ paper, isNew = false }: PaperFormProps) {
                 type="text"
                 value={title}
                 onChange={(e) => {
-                  setTitle(e.target.value);
+                  const newTitle = e.target.value;
+                  setTitle(newTitle);
                   setIsDirty(true);
+                  if (isNew && !slugManual) {
+                    const autoSlug = newTitle
+                      .toLowerCase()
+                      .trim()
+                      .replace(/[^\w\s-]/g, '')
+                      .replace(/[\s_-]+/g, '-')
+                      .replace(/^-+|-+$/g, '');
+                    setSlug(autoSlug);
+                  }
                 }}
                 placeholder="e.g. Planetary Microclimate Telemetry: High-Density Sensor Compression"
                 className="w-full h-11 px-3.5 bg-[#fdfcff] border border-[#e4e3ea] focus:border-[#5b4be0] rounded-xl text-[15px] font-medium text-[#16151c] outline-none transition-all"
@@ -261,7 +272,7 @@ export function PaperForm({ paper, isNew = false }: PaperFormProps) {
             {/* URL Slug */}
             <div>
               <label className="block text-[12px] font-medium text-[#4a4955] mb-1">
-                URL Slug (auto-generated if blank, logs 301 on change)
+                URL Slug (auto-generated from title, logs 301 on change)
               </label>
               <div className="flex items-center gap-1 text-[13px] text-[#86858f] bg-[#f6f5fa] border border-[#e4e3ea] rounded-xl px-3 h-10">
                 <span>/papers/</span>
@@ -270,6 +281,7 @@ export function PaperForm({ paper, isNew = false }: PaperFormProps) {
                   value={slug}
                   onChange={(e) => {
                     setSlug(e.target.value);
+                    setSlugManual(true);
                     setIsDirty(true);
                   }}
                   placeholder="microclimate-telemetry-compression"

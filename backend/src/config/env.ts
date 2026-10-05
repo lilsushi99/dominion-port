@@ -54,6 +54,13 @@ function normalizeDbName(val?: string): string {
   return val;
 }
 
+function normalizePublicMediaUrl(val?: string): string {
+  if (!val || val === 'dflamez_pls' || val === 'dflamez_erp' || val.trim() === '') {
+    return '/media';
+  }
+  return val.startsWith('http') || val.startsWith('/') ? val : `/${val}`;
+}
+
 /**
  * Resolves the persistent media storage directory without making assumptions.
  * Guaranteed to point outside deployment-managed transient directories (hbuilds/public_html).
@@ -137,7 +144,7 @@ export function validateEnv(): AppEnv {
     DB_NAME: normalizeDbName(process.env.DB_NAME || process.env.DATABASE_NAME),
     UPLOAD_DIR: uploadDir,
     MEDIA_STORAGE_DIR: uploadDir,
-    PUBLIC_MEDIA_URL: process.env.PUBLIC_MEDIA_URL || '/media',
+    PUBLIC_MEDIA_URL: normalizePublicMediaUrl(process.env.PUBLIC_MEDIA_URL),
     SITE_URL: process.env.SITE_URL || 'http://localhost:3000',
     ADMIN_ORIGIN: process.env.ADMIN_ORIGIN || process.env.SITE_URL || 'http://localhost:3000',
     SESSION_COOKIE_DOMAIN: process.env.SESSION_COOKIE_DOMAIN,

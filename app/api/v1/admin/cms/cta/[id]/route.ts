@@ -1,4 +1,4 @@
-// app/api/v1/admin/cms/cta/[id]/route.ts
+// app/api/v1/admin/cms/cta/[id]/route.ts — Admin Individual CTA Link Update & Delete
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateAdmin, validateCsrf } from '@/lib/auth/admin-auth-helper';
 import { updateCtaLink, deleteCtaLink } from '@/backend/src/services/cms.service';
@@ -18,13 +18,21 @@ export async function PUT(
 
   try {
     const body = await req.json();
-    const { label, url, sort_order, is_active } = body;
+    const { label, url, sort_order, is_active, presentation_mode, platform } = body;
 
     if (!label?.trim() || !url?.trim()) {
       return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'Label and URL are required.' } }, { status: 400 });
     }
 
-    const updated = await updateCtaLink(linkId, label, url, sort_order ?? 0, is_active ?? true);
+    const updated = await updateCtaLink(
+      linkId,
+      label,
+      url,
+      sort_order ?? 0,
+      is_active ?? true,
+      presentation_mode || 'text',
+      platform || null
+    );
     if (!updated) {
       return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'CTA link not found.' } }, { status: 404 });
     }
