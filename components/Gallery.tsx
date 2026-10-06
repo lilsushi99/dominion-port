@@ -1,6 +1,7 @@
 // components/Gallery.tsx
 import React from 'react';
 import Image from 'next/image';
+import { getSafeMediaUrl } from '@/lib/media-url';
 
 interface GalleryItem {
   id: number;
@@ -24,7 +25,7 @@ export function Gallery({ items }: GalleryProps) {
         <figure key={item.id} className="space-y-2.5">
           <div className="rounded-[4px] overflow-hidden bg-[#202020] border border-[#333333]/30">
             <Image
-              src={item.path}
+              src={getSafeMediaUrl(item.path) || item.path}
               alt={item.alt}
               width={item.width || 1400}
               height={item.height || 900}

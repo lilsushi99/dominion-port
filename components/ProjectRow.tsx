@@ -5,18 +5,11 @@ import React, { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ListItem } from '@/lib/types';
+import { getSafeMediaUrl } from '@/lib/media-url';
 
 interface ProjectRowProps {
   item: ListItem;
   isHoveredElsewhere?: boolean;
-}
-
-function getSafeMediaUrl(path?: string | null): string | null {
-  if (!path) return null;
-  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('/')) {
-    return path;
-  }
-  return `/${path}`;
 }
 
 export function ProjectRow({ item, isHoveredElsewhere }: ProjectRowProps) {

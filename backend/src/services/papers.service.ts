@@ -84,6 +84,23 @@ export function formatPaperRow(row: any): PaperRecord {
     }
   }
 
+  const cover_media = row.cover_media_id
+    ? formatMediaRecord({
+        id: row.cover_media_id,
+        kind: row.cover_kind || 'image',
+        original_name: row.cover_original_name || '',
+        stored_name: row.cover_stored_name || '',
+        relative_path: row.cover_relative_path || '',
+        mime: row.cover_mime || 'image/jpeg',
+        size_bytes: row.cover_size_bytes || 0,
+        width: row.cover_width,
+        height: row.cover_height,
+        duration_s: row.cover_duration_s,
+        alt: row.cover_alt,
+        created_at: ''
+      })
+    : null;
+
   return {
     id: row.id,
     slug: row.slug,
@@ -91,30 +108,12 @@ export function formatPaperRow(row: any): PaperRecord {
     pub_year: row.pub_year,
     pub_month: row.pub_month,
     pub_day: row.pub_day,
-    category_id: row.category_id,
-    category_name: row.category_name,
-    category_slug: row.category_slug,
+    category_id: row.category_id || 4,
+    category_name: 'papers',
+    category_slug: 'papers',
     summary: row.summary,
     cover_media_id: row.cover_media_id,
-    cover_media: row.cover_media_id
-      ? {
-          id: row.cover_media_id,
-          kind: row.cover_kind || 'image',
-          original_name: row.cover_original_name || '',
-          stored_name: row.cover_stored_name || '',
-          relative_path: row.cover_relative_path || '',
-          public_url: row.cover_relative_path
-            ? (row.cover_relative_path.startsWith('/') ? row.cover_relative_path : `/media/${row.cover_relative_path}`)
-            : '',
-          mime: row.cover_mime || 'image/jpeg',
-          size_bytes: row.cover_size_bytes || 0,
-          width: row.cover_width,
-          height: row.cover_height,
-          duration_s: row.cover_duration_s,
-          alt: row.cover_alt,
-          created_at: ''
-        }
-      : null,
+    cover_media,
     content_json: contentJson,
     content_html: row.content_html,
     status: row.status,
@@ -247,9 +246,7 @@ export async function createPaper(payload: PaperPayload): Promise<PaperRecord> {
   if (!payload.pub_year) {
     throw new Error('Publication year is required.');
   }
-  if (!payload.category_id) {
-    throw new Error('Category is required.');
-  }
+  const categoryId = payload.category_id || 4;
 
   let finalSlug = payload.slug?.trim() ? generateSlug(payload.slug) : generateSlug(payload.title);
   let slugConflict = await isSlugInUse('paper', finalSlug);
@@ -277,7 +274,7 @@ export async function createPaper(payload: PaperPayload): Promise<PaperRecord> {
         payload.pub_year,
         payload.pub_month || null,
         payload.pub_day || null,
-        payload.category_id,
+        categoryId,
         payload.summary || null,
         payload.cover_media_id || null,
         contentJsonStr,

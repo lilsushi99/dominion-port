@@ -2,6 +2,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { ArticleBlock } from '@/lib/types';
+import { getSafeMediaUrl } from '@/lib/media-url';
 
 interface ArticleBodyProps {
   blocks: ArticleBlock[];
@@ -62,18 +63,44 @@ export function ArticleBody({ blocks }: ArticleBodyProps) {
           }
 
           case 'image': {
-            if (!block.content.path) return null;
+            const rawP = block.content.path || block.content.url;
+            const imgPath = getSafeMediaUrl(rawP);
+            if (!imgPath) return null;
             return (
               <figure key={block.id} className="my-8 space-y-2">
                 <div className="rounded-[4px] overflow-hidden bg-[#202020] border border-[#333333]/30">
                   <Image
-                    src={block.content.path}
+                    src={imgPath}
                     alt={block.content.alt || ''}
                     width={1200}
                     height={750}
                     className="w-full h-auto rounded-[4px] block object-contain"
                     sizes="(max-width: 768px) 100vw, 655px"
                     referrerPolicy="no-referrer"
+                  />
+                </div>
+                {block.content.caption && (
+                  <figcaption className="text-[13px] text-[#75746f]">
+                    {block.content.caption}
+                  </figcaption>
+                )}
+              </figure>
+            );
+          }
+
+          case 'video': {
+            const rawP = block.content.path || block.content.url;
+            const videoPath = getSafeMediaUrl(rawP);
+            if (!videoPath) return null;
+            return (
+              <figure key={block.id} className="my-8 space-y-2">
+                <div className="rounded-[4px] overflow-hidden bg-[#202020] border border-[#333333]/30">
+                  <video
+                    src={videoPath}
+                    controls
+                    playsInline
+                    preload="metadata"
+                    className="w-full h-auto rounded-[4px] block"
                   />
                 </div>
                 {block.content.caption && (

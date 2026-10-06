@@ -6,6 +6,7 @@ import { listPapers, getPaperBySlug as getPaperBySlugService } from '@/backend/s
 import { findCurrentSlug } from '@/backend/src/services/slug.service';
 import { pool } from '@/backend/src/db/pool';
 import { Category, ListItem } from '@/lib/types';
+import { getSafeMediaUrl } from '@/lib/media-url';
 
 export interface SiteProfile {
   name: string;
@@ -117,31 +118,7 @@ export async function getCategories(): Promise<Category[]> {
  * Returns Paper subcategories with item counts for Level 1 Papers browsing (Phase 5).
  */
 export async function getPaperCategories(): Promise<Category[]> {
-  try {
-    const [rows] = await pool.query<any[]>(
-      `SELECT c.*,
-              (SELECT COUNT(*) FROM papers p WHERE p.category_id = c.id AND p.status = 'published') as item_count,
-              m.relative_path as cover_path
-       FROM categories c
-       LEFT JOIN media m ON c.id = 0
-       WHERE c.content_type = 'paper' AND c.is_active = 1
-       ORDER BY c.sort_order ASC, c.id ASC`
-    );
-
-    return rows.map((r: any) => ({
-      id: r.id,
-      slug: r.slug,
-      name: r.name,
-      sort_order: r.sort_order,
-      content_type: 'paper' as const,
-      is_active: Boolean(r.is_active),
-      item_count: Number(r.item_count || 0),
-      cover_path: r.cover_path ? (r.cover_path.startsWith('/') ? r.cover_path : `/media/${r.cover_path}`) : null
-    }));
-  } catch (err) {
-    console.warn('[API] getPaperCategories DB error:', err);
-    return [];
-  }
+  return [];
 }
 
 /**
@@ -165,11 +142,9 @@ export async function getItems(categorySlug?: string): Promise<ListItem[]> {
 
       let previewPath: string | null = null;
       if (previewImage) {
-        previewPath = previewImage.public_url.startsWith('http') || previewImage.public_url.startsWith('/')
-          ? previewImage.public_url
-          : `/${previewImage.public_url}`;
+        previewPath = getSafeMediaUrl(previewImage.public_url || previewImage.relative_path);
       } else if (p.primary_media_id && p.primary_media) {
-        previewPath = p.primary_media.public_url || `/media/${p.primary_media.relative_path}`;
+        previewPath = getSafeMediaUrl(p.primary_media.public_url || p.primary_media.relative_path);
       }
 
       return {
@@ -197,30 +172,34 @@ export async function getItems(categorySlug?: string): Promise<ListItem[]> {
     // If papers category requested or all items
     if (!normalizedCategory || normalizedCategory === 'papers') {
       const papers = await listPapers({
-        categorySlug: normalizedCategory === 'papers' ? undefined : normalizedCategory,
         status: 'published',
         includeDrafts: false
       });
 
-      const paperItems: ListItem[] = papers.map((pap) => ({
-        id: pap.id,
-        slug: pap.slug,
-        year: pap.pub_year,
-        title: pap.title,
-        summary: pap.summary || '',
-        type: 'article' as const,
-        category_slug: 'papers',
-        href: `/papers/${pap.slug}`,
-        is_external: false,
-        preview: pap.cover_media
-          ? {
-              path: pap.cover_media.public_url || `/media/${pap.cover_media.relative_path}`,
-              alt: pap.cover_media.alt || pap.title,
-              width: pap.cover_media.width || 120,
-              height: pap.cover_media.height || 80
-            }
-          : null
-      }));
+      const paperItems: ListItem[] = papers.map((pap) => {
+        const coverRaw = pap.cover_media?.public_url || pap.cover_media?.relative_path;
+        const coverUrl = getSafeMediaUrl(coverRaw);
+
+        return {
+          id: pap.id,
+          slug: pap.slug,
+          year: pap.pub_year,
+          title: pap.title,
+          summary: pap.summary || '',
+          type: 'article' as const,
+          category_slug: 'papers',
+          href: `/papers/${pap.slug}`,
+          is_external: false,
+          preview: coverUrl
+            ? {
+                path: coverUrl,
+                alt: pap.cover_media?.alt || pap.title,
+                width: pap.cover_media?.width || 120,
+                height: pap.cover_media?.height || 80
+              }
+            : null
+        };
+      });
 
       if (categorySlug === 'papers') {
         return paperItems;
@@ -290,6 +269,8 @@ export async function getArticleBySlug(slug: string): Promise<any | null> {
         : String(paper.pub_year),
       title: paper.title,
       summary: paper.summary || '',
+      category_name: 'papers',
+      cover_media: paper.cover_media || null,
       content_html: paper.content_html,
       blocks: paper.content_json?.content || []
     };

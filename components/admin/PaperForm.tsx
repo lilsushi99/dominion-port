@@ -92,7 +92,6 @@ export function PaperForm({ paper, isNew = false }: PaperFormProps) {
     const errs: Record<string, string> = {};
     if (!title.trim()) errs.title = 'Title is required.';
     if (!pubYear || isNaN(pubYear) || pubYear < 1900 || pubYear > 2100) errs.pubYear = 'Valid 4-digit year is required.';
-    if (!categoryId) errs.categoryId = 'Category is required.';
 
     if (targetStatus === 'published') {
       if (!summary.trim()) errs.summary = 'Summary is required for published papers.';
@@ -119,7 +118,7 @@ export function PaperForm({ paper, isNew = false }: PaperFormProps) {
       pub_year: Number(pubYear),
       pub_month: pubMonth !== '' ? Number(pubMonth) : null,
       pub_day: pubDay !== '' ? Number(pubDay) : null,
-      category_id: Number(categoryId),
+      category_id: Number(categoryId) || 4,
       summary: summary.trim() || null,
       cover_media_id: coverMedia?.id || null,
       content_json: contentJson,

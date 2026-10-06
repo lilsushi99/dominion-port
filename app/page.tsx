@@ -32,8 +32,6 @@ export default async function HomePage() {
           {/* Category Switcher & Work List */}
           <HomeWorkSection
             categories={categories}
-            paperCategories={paperCategories}
-            allPapers={allPapers}
             initialItems={items}
             listHeading={profile.list_heading}
           />

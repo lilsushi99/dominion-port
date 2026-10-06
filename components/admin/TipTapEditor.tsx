@@ -116,13 +116,23 @@ const ImageMediaNode = Node.create({
       },
       src: {
         default: null,
+        parseHTML: (element) => {
+          const img = element.querySelector?.('img');
+          return img?.getAttribute('src') || element.getAttribute('data-src') || null;
+        },
+        renderHTML: (attributes) => ({ 'data-src': attributes.src }),
       },
       alt: {
         default: '',
+        parseHTML: (element) => {
+          const img = element.querySelector?.('img');
+          return img?.getAttribute('alt') || element.getAttribute('data-alt') || '';
+        },
+        renderHTML: (attributes) => ({ 'data-alt': attributes.alt }),
       },
       caption: {
         default: '',
-        parseHTML: (element) => element.getAttribute('data-caption') || '',
+        parseHTML: (element) => element.getAttribute('data-caption') || element.querySelector?.('figcaption')?.textContent || '',
         renderHTML: (attributes) => ({ 'data-caption': attributes.caption }),
       },
     };
@@ -132,16 +142,28 @@ const ImageMediaNode = Node.create({
     return [
       {
         tag: 'figure[data-type="image-media"]',
+        getAttrs: (element: HTMLElement | any) => {
+          const img = element.querySelector?.('img');
+          return {
+            mediaId: Number(element.getAttribute?.('data-media-id')),
+            src: img?.getAttribute?.('src') || element.getAttribute?.('data-src') || null,
+            alt: img?.getAttribute?.('alt') || element.getAttribute?.('data-alt') || '',
+            caption: element.querySelector?.('figcaption')?.textContent || element.getAttribute?.('data-caption') || '',
+          };
+        },
       },
     ];
   },
 
   renderHTML({ HTMLAttributes }) {
-    const { src, alt, caption, 'data-media-id': mediaId } = HTMLAttributes;
+    const mediaId = HTMLAttributes['data-media-id'] || HTMLAttributes.mediaId;
+    const src = HTMLAttributes['data-src'] || HTMLAttributes.src || '';
+    const alt = HTMLAttributes['data-alt'] || HTMLAttributes.alt || '';
+    const caption = HTMLAttributes['data-caption'] || HTMLAttributes.caption;
     return [
       'figure',
-      mergeAttributes({ 'data-type': 'image-media', 'data-media-id': mediaId, class: 'paper-media-figure my-8' }),
-      ['img', { src, alt: alt || '', class: 'w-full rounded-lg border border-[#222]' }],
+      mergeAttributes({ 'data-type': 'image-media', 'data-media-id': mediaId, 'data-src': src, 'data-alt': alt, class: 'paper-media-figure my-8' }),
+      ['img', { src, alt, class: 'w-full rounded-lg border border-[#222]' }],
       caption ? ['figcaption', { class: 'text-[13px] text-[#75746f] mt-2 italic text-center' }, caption] : '',
     ];
   },
@@ -167,10 +189,15 @@ const VideoMediaNode = Node.create({
       },
       src: {
         default: null,
+        parseHTML: (element) => {
+          const video = element.querySelector?.('video');
+          return video?.getAttribute('src') || element.getAttribute('data-src') || null;
+        },
+        renderHTML: (attributes) => ({ 'data-src': attributes.src }),
       },
       caption: {
         default: '',
-        parseHTML: (element) => element.getAttribute('data-caption') || '',
+        parseHTML: (element) => element.getAttribute('data-caption') || element.querySelector?.('figcaption')?.textContent || '',
         renderHTML: (attributes) => ({ 'data-caption': attributes.caption }),
       },
     };
@@ -180,16 +207,26 @@ const VideoMediaNode = Node.create({
     return [
       {
         tag: 'figure[data-type="video-media"]',
+        getAttrs: (element: HTMLElement | any) => {
+          const video = element.querySelector?.('video');
+          return {
+            mediaId: Number(element.getAttribute?.('data-media-id')),
+            src: video?.getAttribute?.('src') || element.getAttribute?.('data-src') || null,
+            caption: element.querySelector?.('figcaption')?.textContent || element.getAttribute?.('data-caption') || '',
+          };
+        },
       },
     ];
   },
 
   renderHTML({ HTMLAttributes }) {
-    const { src, caption, 'data-media-id': mediaId } = HTMLAttributes;
+    const mediaId = HTMLAttributes['data-media-id'] || HTMLAttributes.mediaId;
+    const src = HTMLAttributes['data-src'] || HTMLAttributes.src || '';
+    const caption = HTMLAttributes['data-caption'] || HTMLAttributes.caption;
     return [
       'figure',
-      mergeAttributes({ 'data-type': 'video-media', 'data-media-id': mediaId, class: 'paper-video-figure my-8' }),
-      ['video', { src, controls: 'true', class: 'w-full rounded-lg border border-[#222]' }],
+      mergeAttributes({ 'data-type': 'video-media', 'data-media-id': mediaId, 'data-src': src, class: 'paper-video-figure my-8' }),
+      ['video', { src, controls: 'true', playsinline: 'true', class: 'w-full rounded-lg border border-[#222]' }],
       caption ? ['figcaption', { class: 'text-[13px] text-[#75746f] mt-2 italic text-center' }, caption] : '',
     ];
   },

@@ -3,6 +3,7 @@
 // components/ProjectMedia.tsx
 import React, { useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { getSafeMediaUrl } from '@/lib/media-url';
 
 interface ProjectMediaProps {
   primaryType: 'video' | 'image';
@@ -65,10 +66,10 @@ export function ProjectMedia({ primaryType, video, image }: ProjectMediaProps) {
           muted
           loop
           preload="metadata"
-          poster={video.poster_path || undefined}
+          poster={getSafeMediaUrl(video.poster_path) || undefined}
           className="w-full h-auto rounded-[4px] block"
         >
-          <source src={video.path} type={video.mime || 'video/mp4'} />
+          <source src={getSafeMediaUrl(video.path) || video.path} type={video.mime || 'video/mp4'} />
           Your browser does not support HTML5 video.
         </video>
       </div>
@@ -76,10 +77,11 @@ export function ProjectMedia({ primaryType, video, image }: ProjectMediaProps) {
   }
 
   if (image) {
+    const imgUrl = getSafeMediaUrl(image.path) || image.path;
     return (
       <div className="w-full rounded-[4px] overflow-hidden bg-[#202020] border border-[#333333]/30 my-8">
         <Image
-          src={image.path}
+          src={imgUrl}
           alt={image.alt}
           width={image.width || 1200}
           height={image.height || 750}

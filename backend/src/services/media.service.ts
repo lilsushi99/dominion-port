@@ -119,11 +119,20 @@ export function validateMagicBytes(buffer: Buffer, declaredMime: string): { vali
  */
 export function cleanRelativePath(rawPath: string): string {
   if (!rawPath) return '';
-  let cleaned = String(rawPath).replace(/\\/g, '/');
+  let cleaned = String(rawPath).trim().replace(/\\/g, '/');
+
+  if (cleaned.startsWith('http://') || cleaned.startsWith('https://')) {
+    return cleaned;
+  }
 
   const idx = cleaned.indexOf('media_uploads/');
   if (idx !== -1) {
     cleaned = cleaned.slice(idx + 'media_uploads/'.length);
+  } else {
+    const upIdx = cleaned.indexOf('uploads/');
+    if (upIdx !== -1) {
+      cleaned = cleaned.slice(upIdx + 'uploads/'.length);
+    }
   }
 
   cleaned = cleaned.replace(/^\/+/, '');
@@ -137,22 +146,32 @@ export function cleanRelativePath(rawPath: string): string {
  * Normalizes a MediaRecord to include public URL.
  */
 export function formatMediaRecord(row: any): MediaRecord {
-  const relPath = cleanRelativePath(row.relative_path);
+  if (!row) return null as any;
+  const raw = row.relative_path || row.stored_name || '';
+  const relPath = cleanRelativePath(raw);
   const publicBase = env.PUBLIC_MEDIA_URL.replace(/\/+$/, '');
+  
+  let publicUrl = '';
+  if (relPath.startsWith('http://') || relPath.startsWith('https://')) {
+    publicUrl = relPath;
+  } else if (relPath) {
+    publicUrl = `${publicBase}/${relPath.replace(/^\/+/, '')}`;
+  }
+
   return {
     id: row.id,
     kind: row.kind,
-    original_name: row.original_name,
-    stored_name: row.stored_name,
+    original_name: row.original_name || '',
+    stored_name: row.stored_name || '',
     relative_path: relPath,
-    mime: row.mime,
-    size_bytes: Number(row.size_bytes),
+    mime: row.mime || (row.kind === 'video' ? 'video/mp4' : 'image/jpeg'),
+    size_bytes: Number(row.size_bytes || 0),
     width: row.width ? Number(row.width) : null,
     height: row.height ? Number(row.height) : null,
     duration_s: row.duration_s ? Number(row.duration_s) : null,
     alt: row.alt || null,
     created_at: row.created_at,
-    public_url: `${publicBase}/${relPath}`,
+    public_url: publicUrl,
     usage_count: row.usage_count !== undefined ? Number(row.usage_count) : undefined
   };
 }
