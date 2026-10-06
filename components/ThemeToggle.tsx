@@ -9,7 +9,7 @@ function emptySubscribe() {
   return () => {};
 }
 
-export function ThemeToggle() {
+export function ThemeToggle({ className = '' }: { className?: string }) {
   const { theme, toggleTheme } = useTheme();
   const isClient = useSyncExternalStore(
     emptySubscribe,
@@ -19,18 +19,21 @@ export function ThemeToggle() {
 
   if (!isClient) return null;
 
+  const isDark = theme === 'dark';
+  const label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+
   return (
     <button
       type="button"
       onClick={toggleTheme}
-      className="p-2 rounded-lg text-[#75746f] hover:text-[#171717] dark:hover:text-[#d6d5cf] hover:bg-[#000000]/5 dark:hover:bg-[#ffffff]/5 transition-colors"
-      title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-      aria-label="Toggle light/dark theme"
+      className={`p-2 rounded-lg text-[#75746f] dark:text-[#8f8e89] hover:text-[#171717] dark:hover:text-[#eae9e4] hover:bg-[#000000]/5 dark:hover:bg-[#ffffff]/5 transition-colors focus:outline-none focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#8f8e89] ${className}`}
+      title={label}
+      aria-label={label}
     >
-      {theme === 'dark' ? (
-        <Sun size={15} className="transition-transform duration-200" />
+      {isDark ? (
+        <Sun size={17} strokeWidth={1.5} className="block transition-transform duration-200" />
       ) : (
-        <Moon size={15} className="transition-transform duration-200" />
+        <Moon size={17} strokeWidth={1.5} className="block transition-transform duration-200" />
       )}
     </button>
   );

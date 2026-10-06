@@ -439,7 +439,7 @@ export function getMergedListItems(categorySlug?: string): ListItem[] {
   });
 
   let all: ListItem[] = [];
-  if (!categorySlug) {
+  if (!categorySlug || categorySlug === 'all') {
     all = [...projectItems, ...articleItems];
   } else if (categorySlug === 'papers') {
     all = articleItems;

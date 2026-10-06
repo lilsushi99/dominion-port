@@ -1,11 +1,49 @@
-/* styles/tokens.css — Design Tokens from DESIGN.md */
-:root {
+/* styles/tokens.css — Design Tokens with [data-theme] Light/Dark Modes */
+:root,
+html[data-theme="dark"],
+html.dark {
   --bg: #2a2a2a;
+  --bg-subtle: #202020;
   --text: #b9b8b2;
-  --text-hi: #d6d5cf;
+  --text-hi: #eae9e4;
   --text-mid: #8f8e89;
   --text-low: #75746f;
   --rule: rgba(255, 255, 255, 0.08);
+  --border-muted: rgba(255, 255, 255, 0.12);
   --radius: 4px;
   --col: 655px;
+
+  /* Button Tokens */
+  --btn-active-bg: #eae9e4;
+  --btn-active-text: #16151c;
+  --btn-inactive-border: rgba(255, 255, 255, 0.2);
+  --btn-inactive-text: #8f8e89;
+
+  /* Floating Blob Tokens */
+  --blob-fill: #eae9e4;
+  --blob-text: #16151c;
+}
+
+html[data-theme="light"],
+html.light {
+  --bg: #f7f6f2;
+  --bg-subtle: #eae9e3;
+  --text: #4a4944;
+  --text-hi: #16151c;
+  --text-mid: #6f6e69;
+  --text-low: #94938d;
+  --rule: rgba(0, 0, 0, 0.08);
+  --border-muted: rgba(0, 0, 0, 0.12);
+  --radius: 4px;
+  --col: 655px;
+
+  /* Button Tokens */
+  --btn-active-bg: #16151c;
+  --btn-active-text: #f7f6f2;
+  --btn-inactive-border: rgba(0, 0, 0, 0.18);
+  --btn-inactive-text: #6f6e69;
+
+  /* Floating Blob Tokens */
+  --blob-fill: #16151c;
+  --blob-text: #f7f6f2;
 }

@@ -90,10 +90,10 @@ export default async function ProjectPage({ params }: PageProps) {
 
           {/* Header: Title & Date */}
           <header className="mb-6">
-            <h1 className="text-[21px] sm:text-[22px] font-semibold text-[#d6d5cf] tracking-[-0.01em] leading-snug">
+            <h1 className="text-[21px] sm:text-[22px] font-semibold text-[#16151c] dark:text-[#eae9e4] tracking-[-0.01em] leading-snug transition-colors">
               {project.title}
             </h1>
-            <time className="block text-[13px] text-[#8f8e89] mt-1.5">
+            <time className="block text-[13px] text-[#6f6e69] dark:text-[#8f8e89] mt-1.5 transition-colors font-mono">
               {project.pub_year}
             </time>
           </header>
@@ -114,16 +114,16 @@ export default async function ProjectPage({ params }: PageProps) {
                 href={project.project_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[14px] text-[#d6d5cf] font-medium underline underline-offset-[3px] hover:text-white transition-colors duration-150 inline-flex items-center gap-1.5 focus:outline-none focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#d6d5cf]"
+                className="text-[14px] text-[#16151c] dark:text-[#eae9e4] font-medium underline underline-offset-[3px] hover:text-[#5b4be0] dark:hover:text-white transition-colors duration-150 inline-flex items-center gap-1.5 focus:outline-none focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#8f8e89]"
               >
                 <span>{project.link_label || 'view live project'}</span>
-                <span className="text-[13px] text-[#75746f]">→</span>
+                <span className="text-[13px] text-[#8f8e89]">→</span>
               </a>
             </div>
           )}
 
           {/* Exactly Three Justified Paragraphs */}
-          <div className="space-y-[1.5em] text-[15px] leading-[1.75] text-[#b9b8b2] editorial-paragraphs mt-6">
+          <div className="space-y-[1.5em] text-[15px] leading-[1.75] text-[#4a4944] dark:text-[#b9b8b2] editorial-paragraphs mt-6 transition-colors">
             {paragraphs.map((p, idx) => (
               <p key={`p-${idx}`}>{p}</p>
             ))}

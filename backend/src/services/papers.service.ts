@@ -142,7 +142,7 @@ export async function listPapers(options: {
     whereClauses.push('pap.status = "published"');
   }
 
-  if (options.categorySlug) {
+  if (options.categorySlug && options.categorySlug !== 'all') {
     whereClauses.push('c.slug = ?');
     params.push(options.categorySlug);
   }

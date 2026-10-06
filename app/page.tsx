@@ -3,6 +3,7 @@ import { getProfile, getCategories, getItems } from '@/lib/api';
 import { IntroLetter } from '@/components/IntroLetter';
 import { ContactLinks } from '@/components/ContactLinks';
 import { HomeWorkSection } from '@/components/HomeWorkSection';
+import { FloatingWorkButton } from '@/components/FloatingWorkButton';
 import { Footer } from '@/components/Footer';
 
 export const revalidate = 0; // Fresh database reads
@@ -13,13 +14,14 @@ export default async function HomePage() {
   const items = await getItems();
 
   return (
-    <main className="min-h-screen flex flex-col">
-      <div className="w-full max-w-[655px] mx-auto px-6 sm:px-0 pt-[72px] sm:pt-[170px] pb-[80px] flex-1 flex flex-col justify-between">
+    <main className="min-h-screen flex flex-col relative">
+      <div className="w-full max-w-[655px] mx-auto px-6 sm:px-0 pt-[72px] sm:pt-[130px] pb-[80px] flex-1 flex flex-col justify-between">
         <div>
-          {/* Introduction Letter */}
+          {/* Introduction Letter with Profile Avatar & Theme Toggle */}
           <IntroLetter
             introHtml={profile.intro_html}
             signOff={profile.sign_off}
+            profileImages={profile.profile_images}
           />
 
           {/* Contact Links */}
@@ -42,6 +44,9 @@ export default async function HomePage() {
           designerUrl={profile.footer.designer_url}
         />
       </div>
+
+      {/* Organic Paint-Splash Floating "See What I Built" Button */}
+      <FloatingWorkButton />
     </main>
   );
 }

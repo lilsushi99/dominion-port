@@ -71,7 +71,7 @@ export async function listProjects(options?: {
   const conditions: string[] = [];
   const params: any[] = [];
 
-  if (options?.categorySlug) {
+  if (options?.categorySlug && options.categorySlug !== 'all') {
     conditions.push('c.slug = ?');
     params.push(options.categorySlug);
   }

@@ -1,6 +1,6 @@
 'use client';
 
-// components/CategorySwitch.tsx — Minimalist Editorial Interactive Category Filters
+// components/CategorySwitch.tsx — Category Filter Buttons with Modest Radius & Clean Theme States
 import React from 'react';
 import { Category } from '@/lib/types';
 
@@ -15,19 +15,31 @@ export function CategorySwitch({
   activeCategory,
   onSelectCategory
 }: CategorySwitchProps) {
+  const isAllActive = activeCategory === null;
+
   return (
-    <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 mb-10 text-[12px] sm:text-[13px] font-mono">
-      {/* ALL Filter */}
+    <div
+      role="group"
+      aria-label="Filter portfolio items by category"
+      className="flex flex-wrap items-center gap-2 sm:gap-2.5 mb-10 text-[13px] font-sans"
+    >
+      {/* ALL Filter Button */}
       <button
         type="button"
         onClick={() => onSelectCategory(null)}
-        className={`cursor-pointer px-3 py-1.5 rounded-lg border transition-all duration-150 uppercase tracking-wider ${
-          activeCategory === null
-            ? 'bg-[#000000]/10 dark:bg-[#ffffff]/10 text-[#171717] dark:text-[#ffffff] border-[#000000]/20 dark:border-[#ffffff]/25 font-semibold shadow-2xs'
-            : 'bg-transparent text-[#75746f] dark:text-[#8f8e89] border-transparent hover:border-[#000000]/10 dark:hover:border-[#ffffff]/10 hover:text-[#171717] dark:hover:text-[#d6d5cf]'
+        aria-pressed={isAllActive}
+        className={`cursor-pointer px-3.5 py-2 min-h-[40px] rounded-[8px] border transition-colors duration-150 text-[13px] font-medium select-none capitalize focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8f8e89] ${
+          isAllActive
+            ? 'bg-[#eae9e4] text-[#16151c] border-[#eae9e4] dark:bg-[#eae9e4] dark:text-[#16151c] dark:border-[#eae9e4] light:bg-[#16151c] light:text-[#f7f6f2] light:border-[#16151c]'
+            : 'bg-transparent text-[#8f8e89] border-[#444444]/60 hover:text-[#eae9e4] hover:border-[#666666] dark:text-[#8f8e89] dark:border-[#444444]/60 dark:hover:text-[#eae9e4] dark:hover:border-[#666666] light:text-[#6f6e69] light:border-[#d0cfcb] light:hover:text-[#16151c] light:hover:border-[#999999]'
         }`}
+        style={{
+          backgroundColor: isAllActive ? 'var(--btn-active-bg)' : 'transparent',
+          color: isAllActive ? 'var(--btn-active-text)' : 'var(--btn-inactive-text)',
+          borderColor: isAllActive ? 'var(--btn-active-bg)' : 'var(--btn-inactive-border)',
+        }}
       >
-        [ all ]
+        All
       </button>
 
       {/* Dynamic Project Categories + Papers */}
@@ -38,13 +50,19 @@ export function CategorySwitch({
             key={cat.id || cat.slug}
             type="button"
             onClick={() => onSelectCategory(cat.slug)}
-            className={`cursor-pointer px-3 py-1.5 rounded-lg border transition-all duration-150 uppercase tracking-wider ${
+            aria-pressed={isActive}
+            className={`cursor-pointer px-3.5 py-2 min-h-[40px] rounded-[8px] border transition-colors duration-150 text-[13px] font-medium select-none capitalize focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8f8e89] ${
               isActive
-                ? 'bg-[#000000]/10 dark:bg-[#ffffff]/10 text-[#171717] dark:text-[#ffffff] border-[#000000]/20 dark:border-[#ffffff]/25 font-semibold shadow-2xs'
-                : 'bg-transparent text-[#75746f] dark:text-[#8f8e89] border-transparent hover:border-[#000000]/10 dark:hover:border-[#ffffff]/10 hover:text-[#171717] dark:hover:text-[#d6d5cf]'
+                ? 'bg-[#eae9e4] text-[#16151c] border-[#eae9e4] dark:bg-[#eae9e4] dark:text-[#16151c] dark:border-[#eae9e4] light:bg-[#16151c] light:text-[#f7f6f2] light:border-[#16151c]'
+                : 'bg-transparent text-[#8f8e89] border-[#444444]/60 hover:text-[#eae9e4] hover:border-[#666666] dark:text-[#8f8e89] dark:border-[#444444]/60 dark:hover:text-[#eae9e4] dark:hover:border-[#666666] light:text-[#6f6e69] light:border-[#d0cfcb] light:hover:text-[#16151c] light:hover:border-[#999999]'
             }`}
+            style={{
+              backgroundColor: isActive ? 'var(--btn-active-bg)' : 'transparent',
+              color: isActive ? 'var(--btn-active-text)' : 'var(--btn-inactive-text)',
+              borderColor: isActive ? 'var(--btn-active-bg)' : 'var(--btn-inactive-border)',
+            }}
           >
-            [ {cat.name} ]
+            {cat.name}
           </button>
         );
       })}

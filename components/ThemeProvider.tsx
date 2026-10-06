@@ -1,7 +1,7 @@
 'use client';
 
-// components/ThemeProvider.tsx — Seamless Light/Dark Mode Manager
-import React, { createContext, useContext, useSyncExternalStore } from 'react';
+// components/ThemeProvider.tsx — Seamless Light/Dark Mode Manager with [data-theme] attribute
+import React, { createContext, useContext, useEffect, useSyncExternalStore } from 'react';
 
 type Theme = 'dark' | 'light';
 
@@ -24,8 +24,9 @@ function subscribeToStorage(callback: () => void) {
 
 function getStoredTheme(): Theme {
   if (typeof window === 'undefined') return 'dark';
-  const saved = localStorage.getItem('dominion_theme');
-  return saved === 'light' || saved === 'dark' ? saved : 'dark';
+  const saved = localStorage.getItem('dominion_theme') as Theme | null;
+  if (saved === 'light' || saved === 'dark') return saved;
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
 }
 
 function getServerTheme(): Theme {
@@ -35,10 +36,28 @@ function getServerTheme(): Theme {
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const theme = useSyncExternalStore(subscribeToStorage, getStoredTheme, getServerTheme);
 
+  // Keep <html> in sync with data-theme and classes
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'light') {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    }
+  }, [theme]);
+
   const setTheme = (newTheme: Theme) => {
     localStorage.setItem('dominion_theme', newTheme);
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
-    document.documentElement.classList.toggle('light', newTheme === 'light');
+    document.documentElement.setAttribute('data-theme', newTheme);
+    if (newTheme === 'light') {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    }
     window.dispatchEvent(new Event('storage'));
   };
 
@@ -49,9 +68,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
-      <div className={theme === 'light' ? 'light text-[#171717]' : 'dark text-[#d6d5cf]'}>
-        {children}
-      </div>
+      {children}
     </ThemeContext.Provider>
   );
 }

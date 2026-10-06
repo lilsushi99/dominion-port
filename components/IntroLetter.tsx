@@ -1,32 +1,59 @@
-// components/IntroLetter.tsx — Editorial Intro Letter with Optional Sign-Off
+// components/IntroLetter.tsx — Editorial Intro Letter with Profile Avatar and Theme Toggle
 import React from 'react';
+import { ProfileAvatar } from './ProfileAvatar';
+import { ThemeToggle } from './ThemeToggle';
+
+interface ProfileImage {
+  id: number;
+  url: string;
+  alt?: string | null;
+  width?: number | null;
+  height?: number | null;
+}
 
 interface IntroLetterProps {
   introHtml?: string;
   introBody?: string;
   signOff?: string | null;
+  profileImages?: ProfileImage[];
 }
 
-export function IntroLetter({ introHtml, introBody, signOff }: IntroLetterProps) {
+export function IntroLetter({
+  introHtml,
+  introBody,
+  signOff,
+  profileImages = []
+}: IntroLetterProps) {
   const trimmedSignOff = (signOff || '').trim();
   const signOffLines = trimmedSignOff ? trimmedSignOff.split('\n') : [];
 
   return (
     <section className="mb-[3.5em]">
+      {/* Profile Avatar Header with Theme Toggle */}
+      <div className="flex items-center justify-between mb-2">
+        {profileImages && profileImages.length > 0 ? (
+          <ProfileAvatar images={profileImages} />
+        ) : (
+          <div />
+        )}
+        <ThemeToggle className="mb-6 -mr-1" />
+      </div>
+
+      {/* Intro Body Text */}
       {introHtml ? (
         <div
-          className="space-y-[1.5em] text-[#333333] dark:text-[#b9b8b2] text-[15px] leading-[1.75] [&_a]:text-[#171717] dark:[&_a]:text-[#d6d5cf] [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-[#5b4be0] dark:[&_a:hover]:text-white [&_strong]:text-[#171717] dark:[&_strong]:text-[#eae9e4] [&_strong]:font-semibold transition-colors"
+          className="space-y-[1.5em] text-[#4a4944] dark:text-[#b9b8b2] text-[15px] leading-[1.75] [&_a]:text-[#16151c] dark:[&_a]:text-[#eae9e4] [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-[#000000] dark:[&_a:hover]:text-white [&_strong]:text-[#16151c] dark:[&_strong]:text-[#eae9e4] [&_strong]:font-semibold transition-colors"
           dangerouslySetInnerHTML={{ __html: introHtml }}
         />
       ) : (
-        <div className="space-y-[1.5em] text-[#333333] dark:text-[#b9b8b2] text-[15px] leading-[1.75]">
+        <div className="space-y-[1.5em] text-[#4a4944] dark:text-[#b9b8b2] text-[15px] leading-[1.75]">
           <p>{introBody}</p>
         </div>
       )}
 
-      {/* Optional sign-off lines (only rendered when sign-off text is explicitly provided) */}
+      {/* Optional sign-off lines */}
       {signOffLines.length > 0 && (
-        <div className="mt-[2em] text-[15px] leading-[1.3] text-[#333333] dark:text-[#b9b8b2] transition-colors">
+        <div className="mt-[2em] text-[15px] leading-[1.3] text-[#4a4944] dark:text-[#b9b8b2] transition-colors">
           {signOffLines.map((line, idx) => (
             <div key={`signoff-${idx}`}>{line}</div>
           ))}

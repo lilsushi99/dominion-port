@@ -208,19 +208,21 @@ export function HomeWorkSection({
                       </div>
 
                       {paper.cover_media ? (
-                        <div className="relative w-[120px] h-[78px] rounded-[4px] overflow-hidden bg-[#242424] shrink-0 justify-self-end border border-[#333333]/30">
-                          <Image
-                            src={paper.cover_media.public_url || `/media/${paper.cover_media.relative_path}`}
-                            alt={paper.cover_media.alt || paper.title}
-                            fill
-                            unoptimized
-                            className="object-cover"
-                            sizes="120px"
-                            referrerPolicy="no-referrer"
-                          />
+                        <div className="relative justify-self-end w-[120px] h-[78px] z-10">
+                          <div className="w-[120px] h-[78px] rounded-[6px] overflow-hidden bg-[#242424] border border-[#333333]/30 transition-transform duration-250 ease-out will-change-transform group-hover:scale-[1.8] group-hover:-translate-y-1 group-hover:shadow-[0_16px_32px_rgba(0,0,0,0.4)] group-hover:z-30 group-focus-within:scale-[1.8] group-focus-within:-translate-y-1 group-focus-within:shadow-[0_16px_32px_rgba(0,0,0,0.4)] group-focus-within:z-30 origin-right">
+                            <Image
+                              src={paper.cover_media.public_url || `/media/${paper.cover_media.relative_path}`}
+                              alt={paper.cover_media.alt || paper.title}
+                              fill
+                              unoptimized
+                              className="object-cover transition-transform duration-250 ease-out"
+                              sizes="120px"
+                              referrerPolicy="no-referrer"
+                            />
+                          </div>
                         </div>
                       ) : (
-                        <div className="w-[120px] h-[78px] rounded-[4px] bg-[#000000]/5 dark:bg-[#ffffff]/5 border border-[#000000]/10 dark:border-[#ffffff]/10 flex items-center justify-center text-[#75746f] shrink-0 justify-self-end">
+                        <div className="w-[120px] h-[78px] rounded-[6px] bg-[#000000]/5 dark:bg-[#ffffff]/5 border border-[#000000]/10 dark:border-[#ffffff]/10 flex items-center justify-center text-[#75746f] shrink-0 justify-self-end">
                           <FileText size={18} />
                         </div>
                       )}

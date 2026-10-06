@@ -12,6 +12,15 @@ export interface SiteProfile {
   intro_html: string;
   sign_off: string;
   list_heading: string;
+  profile_images: Array<{
+    id: number;
+    media_id: number;
+    sort_order: number;
+    url: string;
+    alt?: string | null;
+    width?: number | null;
+    height?: number | null;
+  }>;
   contact_links: Array<{
     id: number;
     label: string;
@@ -37,6 +46,7 @@ export async function getProfile(): Promise<SiteProfile> {
       intro_html: data.home_content.body_html,
       sign_off: data.home_content.sign_off,
       list_heading: data.site_settings.projects_heading,
+      profile_images: data.profile_images || [],
       contact_links: data.cta_links,
       footer: data.footer
     };
@@ -47,6 +57,7 @@ export async function getProfile(): Promise<SiteProfile> {
       intro_html: '<p>hey, i\'m dominion. i design and build web software, design systems, and data tools.</p>',
       sign_off: '',
       list_heading: "p.s. things i've made and written…",
+      profile_images: [],
       contact_links: [
         { id: 1, label: 'email me', url: 'mailto:dominion@example.com', sort_order: 1, presentation_mode: 'text' },
         { id: 2, label: 'text me on linkedin', url: 'https://linkedin.com/in/dominion', sort_order: 2, presentation_mode: 'text' },
@@ -138,8 +149,10 @@ export async function getPaperCategories(): Promise<Category[]> {
  */
 export async function getItems(categorySlug?: string): Promise<ListItem[]> {
   try {
+    const normalizedCategory = (!categorySlug || categorySlug === 'all') ? undefined : categorySlug;
+
     const projects = await listProjects({
-      categorySlug: categorySlug && categorySlug !== 'papers' ? categorySlug : undefined,
+      categorySlug: normalizedCategory && normalizedCategory !== 'papers' ? normalizedCategory : undefined,
       status: 'published',
       includeDrafts: false
     });
@@ -182,9 +195,9 @@ export async function getItems(categorySlug?: string): Promise<ListItem[]> {
     });
 
     // If papers category requested or all items
-    if (!categorySlug || categorySlug === 'papers') {
+    if (!normalizedCategory || normalizedCategory === 'papers') {
       const papers = await listPapers({
-        categorySlug: categorySlug === 'papers' ? undefined : categorySlug,
+        categorySlug: normalizedCategory === 'papers' ? undefined : normalizedCategory,
         status: 'published',
         includeDrafts: false
       });

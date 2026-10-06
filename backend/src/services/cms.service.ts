@@ -37,6 +37,16 @@ export interface FooterSettings {
   current_display_year?: number;
 }
 
+export interface ProfileImageItem {
+  id: number;
+  media_id: number;
+  sort_order: number;
+  url: string;
+  alt?: string | null;
+  width?: number | null;
+  height?: number | null;
+}
+
 export interface PublicProfilePayload {
   site_settings: {
     projects_heading: string;
@@ -45,6 +55,7 @@ export interface PublicProfilePayload {
     body_html: string;
     sign_off: string;
   };
+  profile_images: ProfileImageItem[];
   cta_links: CtaLink[];
   footer: {
     year: number;
@@ -342,12 +353,77 @@ export async function updateFooterSettings(
 }
 
 /**
+ * Lists profile images in sorted order.
+ */
+export async function listProfileImages(): Promise<ProfileImageItem[]> {
+  try {
+    const [rows] = await pool.query<any[]>(
+      `SELECT pi.id, pi.media_id, pi.sort_order,
+              m.relative_path, m.alt, m.width, m.height
+       FROM profile_images pi
+       INNER JOIN media m ON pi.media_id = m.id
+       ORDER BY pi.sort_order ASC, pi.id ASC`
+    );
+
+    return rows.map((r: any) => ({
+      id: r.id,
+      media_id: r.media_id,
+      sort_order: r.sort_order,
+      url: r.relative_path.startsWith('http') || r.relative_path.startsWith('/')
+        ? r.relative_path
+        : `/media/${r.relative_path}`,
+      alt: r.alt || 'Dominion',
+      width: r.width || 128,
+      height: r.height || 128
+    }));
+  } catch (err) {
+    console.warn('[CMS] listProfileImages query failed:', err);
+    return [];
+  }
+}
+
+/**
+ * Adds a profile image.
+ */
+export async function addProfileImage(mediaId: number): Promise<ProfileImageItem | null> {
+  const [maxRows] = await pool.query<any[]>('SELECT MAX(sort_order) as max_order FROM profile_images');
+  const nextOrder = (maxRows[0]?.max_order || 0) + 1;
+
+  const [res] = await pool.query<any>(
+    'INSERT INTO profile_images (media_id, sort_order) VALUES (?, ?)',
+    [mediaId, nextOrder]
+  );
+
+  const images = await listProfileImages();
+  return images.find((img) => img.id === res.insertId) || null;
+}
+
+/**
+ * Removes a profile image.
+ */
+export async function deleteProfileImage(id: number): Promise<boolean> {
+  const [res] = await pool.query<any>('DELETE FROM profile_images WHERE id = ?', [id]);
+  return res.affectedRows > 0;
+}
+
+/**
+ * Reorders profile images.
+ */
+export async function reorderProfileImages(orderedIds: number[]): Promise<ProfileImageItem[]> {
+  for (let i = 0; i < orderedIds.length; i++) {
+    await pool.query('UPDATE profile_images SET sort_order = ? WHERE id = ?', [i + 1, orderedIds[i]]);
+  }
+  return listProfileImages();
+}
+
+/**
  * Returns full profile payload for public homepage.
  */
 export async function getPublicProfile(): Promise<PublicProfilePayload> {
-  const [siteSettings, homeContent, ctaLinks, footerSettings] = await Promise.all([
+  const [siteSettings, homeContent, profileImages, ctaLinks, footerSettings] = await Promise.all([
     getSiteSettings(),
     getHomeContent(),
+    listProfileImages(),
     listCtaLinks(false),
     getFooterSettings()
   ]);
@@ -360,6 +436,7 @@ export async function getPublicProfile(): Promise<PublicProfilePayload> {
       body_html: homeContent.body_html,
       sign_off: homeContent.sign_off
     },
+    profile_images: profileImages,
     cta_links: ctaLinks,
     footer: {
       year: footerSettings.current_display_year || 2026,

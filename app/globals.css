@@ -12,6 +12,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   position: relative;
   min-height: 100vh;
+  overflow-x: clip;
 }
 
 body::before {
@@ -45,4 +46,36 @@ body::before {
 *:focus-visible {
   outline: 1px solid var(--text-hi);
   outline-offset: 2px;
+}
+
+/* Floating Blob subtle idle wobble */
+@keyframes idleWobble {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(1.2deg) scale(1.015);
+  }
+  50% {
+    transform: rotate(-0.8deg) scale(0.99);
+  }
+  75% {
+    transform: rotate(0.6deg) scale(1.01);
+  }
+}
+
+.animate-blob-wobble {
+  animation: idleWobble 9s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-blob-wobble {
+    animation: none !important;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
 }
