@@ -112,7 +112,7 @@ export function HomeWorkSection({
   return (
     <section id="work" className="pt-4 scroll-mt-20">
       {/* Section Heading with Strong Editorial Hierarchy (Phase 3) */}
-      <h2 className="text-[17px] sm:text-[18px] font-semibold text-[#171717] dark:text-[#eae9e4] tracking-[-0.01em] mb-6 transition-colors">
+      <h2 className="text-[17px] sm:text-[18px] font-semibold text-[#000000] dark:text-[#eae9e4] tracking-[-0.01em] mb-6 transition-colors">
         {listHeading}
       </h2>
 

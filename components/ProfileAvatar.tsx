@@ -66,7 +66,7 @@ export function ProfileAvatar({ images }: ProfileAvatarProps) {
   };
 
   return (
-    <div className="mb-6 inline-block">
+    <div className="mb-6 inline-block relative z-10 isolate">
       <button
         type="button"
         onClick={handleCycle}

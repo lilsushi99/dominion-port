@@ -1,4 +1,4 @@
-// app/papers/[slug]/page.tsx — Paper / Article Editorial Page
+// app/papers/[...slug]/page.tsx — Paper / Article Editorial Page
 import { notFound, redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getArticleBySlug, getProfile } from '@/lib/api';
@@ -7,12 +7,18 @@ import { ArticleBody } from '@/components/ArticleBody';
 import { Footer } from '@/components/Footer';
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string[] }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const article = await getArticleBySlug(slug);
+  const { slug: segments } = await params;
+  if (!segments || segments.length === 0) {
+    return { title: 'Dominion — Research & Papers' };
+  }
+
+  // The paper slug is the last segment in the URL
+  const paperSlug = segments[segments.length - 1];
+  const article = await getArticleBySlug(paperSlug);
 
   if (!article || article.redirect) {
     return {
@@ -31,8 +37,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function PaperPage({ params }: PageProps) {
-  const { slug } = await params;
-  const article = await getArticleBySlug(slug);
+  const { slug: segments } = await params;
+  if (!segments || segments.length === 0) {
+    notFound();
+  }
+
+  // The paper slug is the last segment (e.g. /papers/tech-papers/my-paper => 'my-paper')
+  const paperSlug = segments[segments.length - 1];
+  const article = await getArticleBySlug(paperSlug);
 
   if (!article) {
     notFound();
@@ -48,7 +60,7 @@ export default async function PaperPage({ params }: PageProps) {
     <article className="min-h-screen flex flex-col">
       <div className="w-full max-w-[655px] mx-auto px-6 sm:px-0 pt-[72px] sm:pt-[120px] pb-[80px] flex-1 flex flex-col justify-between">
         <div>
-          {/* Back navigation with category 'papers' preserved */}
+          {/* Back navigation to /papers */}
           <BackLink categorySlug="papers" />
 
           {/* Paper Header */}

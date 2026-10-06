@@ -11,11 +11,8 @@ interface ProjectRowProps {
   isHoveredElsewhere?: boolean;
 }
 
-function getSafeImagePath(path?: string | null): string | null {
+function getSafeMediaUrl(path?: string | null): string | null {
   if (!path) return null;
-  if (path.endsWith('.mp4') || path.endsWith('.webm') || path.endsWith('.mov')) {
-    return null;
-  }
   if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('/')) {
     return path;
   }
@@ -25,7 +22,9 @@ function getSafeImagePath(path?: string | null): string | null {
 export function ProjectRow({ item, isHoveredElsewhere }: ProjectRowProps) {
   const isExternal = item.is_external || Boolean(item.live_url && item.type === 'project' && false);
   const arrowGlyph = item.is_external ? '↗' : '→';
-  const previewPath = getSafeImagePath(item.preview?.path);
+  const rawPath = item.preview?.path;
+  const previewPath = getSafeMediaUrl(rawPath);
+  const isVideo = Boolean(previewPath && (previewPath.endsWith('.mp4') || previewPath.endsWith('.webm') || previewPath.endsWith('.mov')));
 
   const rowRef = useRef<HTMLAnchorElement>(null);
   const [isMobileCentered, setIsMobileCentered] = useState(false);
@@ -70,14 +69,14 @@ export function ProjectRow({ item, isHoveredElsewhere }: ProjectRowProps) {
 
         {/* Title & Description */}
         <div className="pr-4">
-          <div className="text-[15px] text-[#171717] dark:text-[#eae9e4] font-medium leading-snug flex items-center gap-1.5 transition-colors group-hover:text-[#171717] dark:group-hover:text-white">
+          <div className="text-[15px] text-[#000000] dark:text-[#eae9e4] font-medium leading-snug flex items-center gap-1.5 transition-colors group-hover:text-[#000000] dark:group-hover:text-white">
             <span>{item.title}</span>
-            <span className="text-[13px] text-[#75746f] dark:text-[#8f8e89] transition-transform duration-150 ease-out group-hover:translate-x-[2px] group-hover:text-[#171717] dark:group-hover:text-[#eae9e4]">
+            <span className="text-[13px] text-[#6f6e69] dark:text-[#8f8e89] transition-transform duration-150 ease-out group-hover:translate-x-[2px] group-hover:text-[#000000] dark:group-hover:text-[#eae9e4]">
               {arrowGlyph}
             </span>
           </div>
 
-          <div className="mt-1.5 text-[13px] text-[#555555] dark:text-[#8f8e89] leading-[1.65] transition-colors">
+          <div className="mt-1.5 text-[13px] text-[#222222] dark:text-[#8f8e89] leading-[1.65] transition-colors">
             {item.summary}
           </div>
         </div>
@@ -88,15 +87,26 @@ export function ProjectRow({ item, isHoveredElsewhere }: ProjectRowProps) {
             <div
               className="w-[120px] h-[78px] rounded-[6px] overflow-hidden bg-[#242424] border border-[#333333]/30 transition-transform duration-250 ease-out will-change-transform group-hover:scale-[1.8] group-hover:-translate-y-1 group-hover:shadow-[0_16px_32px_rgba(0,0,0,0.4)] group-hover:z-30 group-focus-within:scale-[1.8] group-focus-within:-translate-y-1 group-focus-within:shadow-[0_16px_32px_rgba(0,0,0,0.4)] group-focus-within:z-30 origin-right"
             >
-              <Image
-                src={previewPath}
-                alt={item.preview?.alt || item.title}
-                fill
-                unoptimized
-                className="object-cover transition-transform duration-250 ease-out"
-                sizes="120px"
-                referrerPolicy="no-referrer"
-              />
+              {isVideo ? (
+                <video
+                  src={previewPath}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover block"
+                />
+              ) : (
+                <Image
+                  src={previewPath}
+                  alt={item.preview?.alt || item.title}
+                  fill
+                  unoptimized
+                  className="object-cover transition-transform duration-250 ease-out"
+                  sizes="120px"
+                  referrerPolicy="no-referrer"
+                />
+              )}
             </div>
           </div>
         )}
@@ -105,16 +115,16 @@ export function ProjectRow({ item, isHoveredElsewhere }: ProjectRowProps) {
       {/* Mobile Layout (<640px) */}
       <div className="sm:hidden space-y-3">
         <div className="flex items-baseline gap-3">
-          <span className="text-[13px] text-[#75746f] dark:text-[#8f8e89] select-none font-mono transition-colors">{item.year}</span>
-          <span className="text-[15px] text-[#171717] dark:text-[#eae9e4] font-medium flex items-center gap-1.5 transition-colors">
+          <span className="text-[13px] text-[#6f6e69] dark:text-[#8f8e89] select-none font-mono transition-colors">{item.year}</span>
+          <span className="text-[15px] text-[#000000] dark:text-[#eae9e4] font-medium flex items-center gap-1.5 transition-colors">
             {item.title}
-            <span className="text-[13px] text-[#75746f] dark:text-[#8f8e89] group-hover:translate-x-[2px] transition-transform">
+            <span className="text-[13px] text-[#6f6e69] dark:text-[#8f8e89] group-hover:translate-x-[2px] transition-transform">
               {arrowGlyph}
             </span>
           </span>
         </div>
 
-        <p className="text-[13px] text-[#555555] dark:text-[#8f8e89] leading-[1.65] transition-colors">
+        <p className="text-[13px] text-[#222222] dark:text-[#8f8e89] leading-[1.65] transition-colors">
           {item.summary}
         </p>
 
@@ -125,15 +135,26 @@ export function ProjectRow({ item, isHoveredElsewhere }: ProjectRowProps) {
                 isMobileCentered ? 'scale-[1.12]' : 'scale-100'
               }`}
             >
-              <Image
-                src={previewPath}
-                alt={item.preview?.alt || item.title}
-                fill
-                unoptimized
-                className="object-cover"
-                sizes="(max-width: 640px) 100vw, 120px"
-                referrerPolicy="no-referrer"
-              />
+              {isVideo ? (
+                <video
+                  src={previewPath}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover block"
+                />
+              ) : (
+                <Image
+                  src={previewPath}
+                  alt={item.preview?.alt || item.title}
+                  fill
+                  unoptimized
+                  className="object-cover"
+                  sizes="(max-width: 640px) 100vw, 120px"
+                  referrerPolicy="no-referrer"
+                />
+              )}
             </div>
           </div>
         )}

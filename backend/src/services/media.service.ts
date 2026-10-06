@@ -115,17 +115,36 @@ export function validateMagicBytes(buffer: Buffer, declaredMime: string): { vali
 }
 
 /**
+ * Cleans raw relative_path stripping absolute filesystem directories if present
+ */
+export function cleanRelativePath(rawPath: string): string {
+  if (!rawPath) return '';
+  let cleaned = String(rawPath).replace(/\\/g, '/');
+
+  const idx = cleaned.indexOf('media_uploads/');
+  if (idx !== -1) {
+    cleaned = cleaned.slice(idx + 'media_uploads/'.length);
+  }
+
+  cleaned = cleaned.replace(/^\/+/, '');
+  if (cleaned.startsWith('media/')) {
+    cleaned = cleaned.slice('media/'.length);
+  }
+  return cleaned;
+}
+
+/**
  * Normalizes a MediaRecord to include public URL.
  */
 export function formatMediaRecord(row: any): MediaRecord {
+  const relPath = cleanRelativePath(row.relative_path);
   const publicBase = env.PUBLIC_MEDIA_URL.replace(/\/+$/, '');
-  const relPath = row.relative_path.startsWith('/') ? row.relative_path.slice(1) : row.relative_path;
   return {
     id: row.id,
     kind: row.kind,
     original_name: row.original_name,
     stored_name: row.stored_name,
-    relative_path: row.relative_path,
+    relative_path: relPath,
     mime: row.mime,
     size_bytes: Number(row.size_bytes),
     width: row.width ? Number(row.width) : null,

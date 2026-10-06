@@ -1,6 +1,6 @@
 'use client';
 
-// components/FloatingWorkButton.tsx — Organic Paint-Splash Blob "See What I Built" Scroll Shortcut
+// components/FloatingWorkButton.tsx — Organic Paint-Splash Blob "See What I've Built" Mobile-First Shortcut
 import React, { useState, useEffect, useRef, useSyncExternalStore } from 'react';
 
 function emptySubscribe() {
@@ -19,13 +19,12 @@ export function FloatingWorkButton() {
       observerRef.current = new IntersectionObserver(
         (entries) => {
           const entry = entries[0];
-          // Hide button as soon as work section starts entering the viewport
+          // Hide button as soon as work section enters the viewport
           if (entry.isIntersecting) {
             setVisible(false);
           } else {
-            // Only show if we are above the work section
             const rect = workSection.getBoundingClientRect();
-            if (rect.top > 200) {
+            if (rect.top > 180) {
               setVisible(true);
             } else {
               setVisible(false);
@@ -33,7 +32,7 @@ export function FloatingWorkButton() {
           }
         },
         {
-          threshold: [0, 0.1, 0.25],
+          threshold: [0, 0.1, 0.2],
           rootMargin: '0px 0px -10% 0px'
         }
       );
@@ -44,7 +43,7 @@ export function FloatingWorkButton() {
     const handleScroll = () => {
       if (!workSection) return;
       const rect = workSection.getBoundingClientRect();
-      if (rect.top <= 200) {
+      if (rect.top <= 180) {
         setVisible(false);
       } else {
         setVisible(true);
@@ -74,12 +73,13 @@ export function FloatingWorkButton() {
 
   return (
     <div
-      className={`fixed right-4 sm:right-8 z-30 pointer-events-none transition-all duration-300 ease-out ${
+      className={`fixed right-3 sm:right-8 z-30 pointer-events-none transition-all duration-300 ease-out ${
         visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
       }`}
       style={{
-        bottom: 'max(1.5rem, calc(1.5rem + env(safe-area-inset-bottom, 0px)))',
-        right: 'max(1rem, calc(1.5rem + env(safe-area-inset-right, 0px)))'
+        // On mobile, position higher up (near 2nd intro paragraph), on desktop position fixed bottom-right
+        top: 'clamp(210px, 32vh, 320px)',
+        bottom: 'auto'
       }}
     >
       <button
@@ -90,26 +90,27 @@ export function FloatingWorkButton() {
           visible ? 'animate-blob-wobble' : ''
         }`}
       >
-        {/* Organic Paint-Splash Blob SVG (flat fill, no gradient, no shadow) */}
-        <div className="relative w-[92px] h-[92px] sm:w-[104px] sm:h-[104px] flex items-center justify-center transition-transform duration-200 group-hover:scale-105 active:scale-95">
+        {/* Original Organic Paint-Splash Blob SVG (flat fill, no gradient, no shadow) */}
+        <div className="relative w-[88px] h-[88px] sm:w-[102px] sm:h-[102px] flex items-center justify-center transition-transform duration-200 group-hover:scale-105 active:scale-95">
           <svg
-            viewBox="0 0 120 120"
+            viewBox="0 0 140 140"
             className="w-full h-full drop-none select-none block"
             style={{
-              fill: 'var(--blob-fill)',
+              fill: 'var(--blob-fill)'
             }}
           >
-            {/* Custom organic paint-splash shape with asymmetrical lobes and circular core */}
-            <path d="M58.5,12.2 C74.8,9.8 91.2,18.4 99.4,32.6 C107.6,46.8 114.2,63.1 107.8,77.5 C101.4,91.9 86.8,102.3 70.5,106.8 C54.2,111.3 35.8,107.8 23.4,97.2 C11.0,86.6 4.6,68.9 7.8,53.2 C11.0,37.5 22.8,24.8 36.8,17.4 C43.5,13.8 50.8,13.3 58.5,12.2 Z" />
-            {/* Small subtle asymmetrical splash droplets */}
-            <circle cx="108" cy="24" r="3.5" />
-            <circle cx="15" cy="88" r="2.8" />
-            <circle cx="105" cy="95" r="2.2" />
+            {/* Custom organic paint-splash shape with asymmetrical splatters extending from central core */}
+            <path d="M70,20 C82,10 90,26 100,18 C108,12 114,28 122,36 C130,44 142,52 134,64 C126,76 142,88 128,100 C118,110 114,128 100,126 C86,124 78,138 66,134 C52,130 44,142 32,128 C20,114 8,112 10,96 C12,82 2,72 10,58 C18,44 14,32 28,26 C40,20 54,30 70,20 Z" />
+            {/* Small detached organic paint droplets */}
+            <circle cx="128" cy="18" r="3.5" />
+            <circle cx="136" cy="78" r="2.8" />
+            <circle cx="16" cy="120" r="3" />
+            <circle cx="10" cy="38" r="2.2" />
           </svg>
 
-          {/* Centered clean text in site font */}
+          {/* Centered clean text in site typography */}
           <span
-            className="absolute inset-0 flex flex-col items-center justify-center text-center text-[10.5px] sm:text-[11.5px] font-medium leading-[1.15] px-3 select-none pointer-events-none"
+            className="absolute inset-0 flex flex-col items-center justify-center text-center text-[10px] sm:text-[11px] font-medium leading-[1.15] px-2.5 select-none pointer-events-none"
             style={{
               color: 'var(--blob-text)',
               fontFamily: 'var(--font-inter-tight), -apple-system, sans-serif',
@@ -117,7 +118,7 @@ export function FloatingWorkButton() {
             }}
           >
             <span>See What</span>
-            <span>I Built</span>
+            <span>I&apos;ve Built</span>
           </span>
         </div>
       </button>

@@ -121,7 +121,9 @@ async function initializeSchemaAndSeeds(db: Database) {
       label TEXT NOT NULL,
       url TEXT NOT NULL,
       sort_order INTEGER NOT NULL DEFAULT 0,
-      is_active INTEGER NOT NULL DEFAULT 1
+      is_active INTEGER NOT NULL DEFAULT 1,
+      presentation_mode TEXT NOT NULL DEFAULT 'text',
+      platform TEXT NULL
     );
 
     CREATE TABLE IF NOT EXISTS footer_settings (
@@ -229,6 +231,21 @@ async function initializeSchemaAndSeeds(db: Database) {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
+
+  // Safe ALTER TABLE migrations for existing DBs
+  try {
+    db.run("ALTER TABLE cta_links ADD COLUMN presentation_mode TEXT NOT NULL DEFAULT 'text';");
+  } catch {}
+  try {
+    db.run("ALTER TABLE cta_links ADD COLUMN platform TEXT NULL;");
+  } catch {}
+
+  // Ensure default paper categories exist
+  try {
+    db.run(`INSERT OR IGNORE INTO categories (id, slug, name, content_type, sort_order, is_active) VALUES (10, 'academic-papers', 'academic papers', 'paper', 1, 1);`);
+    db.run(`INSERT OR IGNORE INTO categories (id, slug, name, content_type, sort_order, is_active) VALUES (11, 'tech-papers', 'tech papers', 'paper', 2, 1);`);
+    db.run(`INSERT OR IGNORE INTO categories (id, slug, name, content_type, sort_order, is_active) VALUES (12, 'research-papers', 'research papers', 'paper', 3, 1);`);
+  } catch {}
 
   // Check if admin user exists, if not seed all default data
   const checkAdmin = db.exec('SELECT COUNT(*) as cnt FROM admin_users');

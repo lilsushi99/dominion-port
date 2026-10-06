@@ -1,5 +1,5 @@
 // app/page.tsx — Home Page (Dominion's Portfolio)
-import { getProfile, getCategories, getItems } from '@/lib/api';
+import { getProfile, getCategories, getItems, getPaperCategories, getAllPapers } from '@/lib/api';
 import { IntroLetter } from '@/components/IntroLetter';
 import { ContactLinks } from '@/components/ContactLinks';
 import { HomeWorkSection } from '@/components/HomeWorkSection';
@@ -11,6 +11,8 @@ export const revalidate = 0; // Fresh database reads
 export default async function HomePage() {
   const profile = await getProfile();
   const categories = await getCategories();
+  const paperCategories = await getPaperCategories();
+  const allPapers = await getAllPapers();
   const items = await getItems();
 
   return (
@@ -30,6 +32,8 @@ export default async function HomePage() {
           {/* Category Switcher & Work List */}
           <HomeWorkSection
             categories={categories}
+            paperCategories={paperCategories}
+            allPapers={allPapers}
             initialItems={items}
             listHeading={profile.list_heading}
           />
