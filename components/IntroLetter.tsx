@@ -42,18 +42,18 @@ export function IntroLetter({
       {/* Intro Body Text */}
       {introHtml ? (
         <div
-          className="space-y-[1.5em] text-[#1a1a1a] dark:text-[#d6d5cf] text-[15px] leading-[1.75] [&_a]:text-[#000000] dark:[&_a]:text-[#eae9e4] [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-[#5b4be0] dark:[&_a:hover]:text-white [&_strong]:text-[#000000] dark:[&_strong]:text-[#ffffff] [&_strong]:font-semibold transition-colors"
+          className="space-y-[1.5em] text-[#000000] dark:text-[#d6d5cf] text-[15px] leading-[1.75] [&_a]:text-[#000000] dark:[&_a]:text-[#eae9e4] [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-[#000000] dark:[&_a:hover]:text-white [&_strong]:text-[#000000] dark:[&_strong]:text-[#ffffff] [&_strong]:font-semibold transition-colors"
           dangerouslySetInnerHTML={{ __html: introHtml }}
         />
       ) : (
-        <div className="space-y-[1.5em] text-[#1a1a1a] dark:text-[#d6d5cf] text-[15px] leading-[1.75]">
+        <div className="space-y-[1.5em] text-[#000000] dark:text-[#d6d5cf] text-[15px] leading-[1.75]">
           <p>{introBody}</p>
         </div>
       )}
 
       {/* Optional sign-off lines */}
       {signOffLines.length > 0 && (
-        <div className="mt-[2em] text-[15px] leading-[1.3] text-[#1a1a1a] dark:text-[#d6d5cf] transition-colors">
+        <div className="mt-[2em] text-[15px] leading-[1.3] text-[#000000] dark:text-[#d6d5cf] transition-colors">
           {signOffLines.map((line, idx) => (
             <div key={`signoff-${idx}`}>{line}</div>
           ))}

@@ -28,10 +28,10 @@ export function CategorySwitch({
         type="button"
         onClick={() => onSelectCategory(null)}
         aria-pressed={isAllActive}
-        className={`cursor-pointer px-3.5 py-2 min-h-[40px] rounded-[8px] border transition-colors duration-150 text-[13px] font-medium select-none capitalize focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8f8e89] ${
+        className={`cursor-pointer px-3.5 py-2 min-h-[40px] rounded-[8px] border transition-colors duration-150 text-[13px] font-medium select-none capitalize focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#000000] dark:focus-visible:outline-[#8f8e89] ${
           isAllActive
-            ? 'bg-[#eae9e4] text-[#16151c] border-[#eae9e4] dark:bg-[#eae9e4] dark:text-[#16151c] dark:border-[#eae9e4] light:bg-[#16151c] light:text-[#f7f6f2] light:border-[#16151c]'
-            : 'bg-transparent text-[#8f8e89] border-[#444444]/60 hover:text-[#eae9e4] hover:border-[#666666] dark:text-[#8f8e89] dark:border-[#444444]/60 dark:hover:text-[#eae9e4] dark:hover:border-[#666666] light:text-[#6f6e69] light:border-[#d0cfcb] light:hover:text-[#16151c] light:hover:border-[#999999]'
+            ? 'bg-black text-white border-black dark:bg-[#eae9e4] dark:text-[#16151c] dark:border-[#eae9e4]'
+            : 'bg-transparent text-black border-black hover:bg-black/5 dark:text-[#8f8e89] dark:border-[#444444]/60 dark:hover:text-[#eae9e4] dark:hover:border-[#666666]'
         }`}
         style={{
           backgroundColor: isAllActive ? 'var(--btn-active-bg)' : 'transparent',
@@ -51,10 +51,10 @@ export function CategorySwitch({
             type="button"
             onClick={() => onSelectCategory(cat.slug)}
             aria-pressed={isActive}
-            className={`cursor-pointer px-3.5 py-2 min-h-[40px] rounded-[8px] border transition-colors duration-150 text-[13px] font-medium select-none capitalize focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8f8e89] ${
+            className={`cursor-pointer px-3.5 py-2 min-h-[40px] rounded-[8px] border transition-colors duration-150 text-[13px] font-medium select-none capitalize focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#000000] dark:focus-visible:outline-[#8f8e89] ${
               isActive
-                ? 'bg-[#eae9e4] text-[#16151c] border-[#eae9e4] dark:bg-[#eae9e4] dark:text-[#16151c] dark:border-[#eae9e4] light:bg-[#16151c] light:text-[#f7f6f2] light:border-[#16151c]'
-                : 'bg-transparent text-[#8f8e89] border-[#444444]/60 hover:text-[#eae9e4] hover:border-[#666666] dark:text-[#8f8e89] dark:border-[#444444]/60 dark:hover:text-[#eae9e4] dark:hover:border-[#666666] light:text-[#6f6e69] light:border-[#d0cfcb] light:hover:text-[#16151c] light:hover:border-[#999999]'
+                ? 'bg-black text-white border-black dark:bg-[#eae9e4] dark:text-[#16151c] dark:border-[#eae9e4]'
+                : 'bg-transparent text-black border-black hover:bg-black/5 dark:text-[#8f8e89] dark:border-[#444444]/60 dark:hover:text-[#eae9e4] dark:hover:border-[#666666]'
             }`}
             style={{
               backgroundColor: isActive ? 'var(--btn-active-bg)' : 'transparent',

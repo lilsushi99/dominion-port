@@ -56,7 +56,7 @@ export function ProjectRow({ item, isHoveredElsewhere }: ProjectRowProps) {
       {/* Desktop & Tablet Layout */}
       <div className="hidden sm:grid sm:grid-cols-[48px_1fr_120px] gap-6 items-start">
         {/* Year */}
-        <div className="text-[13px] text-[#75746f] dark:text-[#8f8e89] pt-[1px] select-none font-normal font-mono transition-colors">
+        <div className="text-[13px] text-[#000000] dark:text-[#8f8e89] pt-[1px] select-none font-normal font-mono transition-colors">
           {item.year}
         </div>
 
@@ -64,12 +64,12 @@ export function ProjectRow({ item, isHoveredElsewhere }: ProjectRowProps) {
         <div className="pr-4">
           <div className="text-[15px] text-[#000000] dark:text-[#eae9e4] font-medium leading-snug flex items-center gap-1.5 transition-colors group-hover:text-[#000000] dark:group-hover:text-white">
             <span>{item.title}</span>
-            <span className="text-[13px] text-[#6f6e69] dark:text-[#8f8e89] transition-transform duration-150 ease-out group-hover:translate-x-[2px] group-hover:text-[#000000] dark:group-hover:text-[#eae9e4]">
+            <span className="text-[13px] text-[#000000] dark:text-[#8f8e89] transition-transform duration-150 ease-out group-hover:translate-x-[2px] group-hover:text-[#000000] dark:group-hover:text-[#eae9e4]">
               {arrowGlyph}
             </span>
           </div>
 
-          <div className="mt-1.5 text-[13px] text-[#222222] dark:text-[#8f8e89] leading-[1.65] transition-colors">
+          <div className="mt-1.5 text-[13px] text-[#000000] dark:text-[#8f8e89] leading-[1.65] transition-colors">
             {item.summary}
           </div>
         </div>
@@ -108,16 +108,16 @@ export function ProjectRow({ item, isHoveredElsewhere }: ProjectRowProps) {
       {/* Mobile Layout (<640px) */}
       <div className="sm:hidden space-y-3">
         <div className="flex items-baseline gap-3">
-          <span className="text-[13px] text-[#6f6e69] dark:text-[#8f8e89] select-none font-mono transition-colors">{item.year}</span>
+          <span className="text-[13px] text-[#000000] dark:text-[#8f8e89] select-none font-mono transition-colors">{item.year}</span>
           <span className="text-[15px] text-[#000000] dark:text-[#eae9e4] font-medium flex items-center gap-1.5 transition-colors">
             {item.title}
-            <span className="text-[13px] text-[#6f6e69] dark:text-[#8f8e89] group-hover:translate-x-[2px] transition-transform">
+            <span className="text-[13px] text-[#000000] dark:text-[#8f8e89] group-hover:translate-x-[2px] transition-transform">
               {arrowGlyph}
             </span>
           </span>
         </div>
 
-        <p className="text-[13px] text-[#222222] dark:text-[#8f8e89] leading-[1.65] transition-colors">
+        <p className="text-[13px] text-[#000000] dark:text-[#8f8e89] leading-[1.65] transition-colors">
           {item.summary}
         </p>
 

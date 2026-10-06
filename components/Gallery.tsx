@@ -35,7 +35,7 @@ export function Gallery({ items }: GalleryProps) {
             />
           </div>
           {item.caption && (
-            <figcaption className="text-[13px] text-[#75746f] italic leading-normal pt-1">
+            <figcaption className="text-[13px] text-[#000000] dark:text-[#75746f] italic leading-normal pt-1">
               {item.caption}
             </figcaption>
           )}

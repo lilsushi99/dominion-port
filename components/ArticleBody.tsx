@@ -12,7 +12,7 @@ export function ArticleBody({ blocks }: ArticleBodyProps) {
   if (!blocks || blocks.length === 0) return null;
 
   return (
-    <div className="space-y-6 text-[#b9b8b2] text-[15px] leading-[1.75] editorial-paragraphs">
+    <div className="space-y-6 text-[#000000] dark:text-[#b9b8b2] text-[15px] leading-[1.75] editorial-paragraphs">
       {blocks.map((block) => {
         switch (block.type) {
           case 'heading': {
@@ -22,7 +22,7 @@ export function ArticleBody({ blocks }: ArticleBodyProps) {
               return (
                 <h2
                   key={block.id}
-                  className="text-[18px] font-semibold text-[#d6d5cf] tracking-[-0.01em] pt-6 pb-2"
+                  className="text-[18px] font-semibold text-[#000000] dark:text-[#d6d5cf] tracking-[-0.01em] pt-6 pb-2"
                 >
                   {text}
                 </h2>
@@ -31,7 +31,7 @@ export function ArticleBody({ blocks }: ArticleBodyProps) {
             return (
               <h3
                 key={block.id}
-                className="text-[16px] font-medium text-[#d6d5cf] pt-4 pb-1"
+                className="text-[16px] font-medium text-[#000000] dark:text-[#d6d5cf] pt-4 pb-1"
               >
                 {text}
               </h3>
@@ -50,11 +50,11 @@ export function ArticleBody({ blocks }: ArticleBodyProps) {
             return (
               <blockquote
                 key={block.id}
-                className="my-8 pl-4 border-l border-[#3a3a3a] text-[#d6d5cf] italic text-[16px] leading-[1.6]"
+                className="my-8 pl-4 border-l border-[#000000]/30 dark:border-[#3a3a3a] text-[#000000] dark:text-[#d6d5cf] italic text-[16px] leading-[1.6]"
               >
                 <p>&ldquo;{block.content.text}&rdquo;</p>
                 {block.content.attribution && (
-                  <footer className="text-[13px] text-[#75746f] not-italic mt-2">
+                  <footer className="text-[13px] text-[#000000] dark:text-[#75746f] not-italic mt-2">
                     — {block.content.attribution}
                   </footer>
                 )}
@@ -80,7 +80,7 @@ export function ArticleBody({ blocks }: ArticleBodyProps) {
                   />
                 </div>
                 {block.content.caption && (
-                  <figcaption className="text-[13px] text-[#75746f]">
+                  <figcaption className="text-[13px] text-[#000000] dark:text-[#75746f]">
                     {block.content.caption}
                   </figcaption>
                 )}
@@ -104,7 +104,7 @@ export function ArticleBody({ blocks }: ArticleBodyProps) {
                   />
                 </div>
                 {block.content.caption && (
-                  <figcaption className="text-[13px] text-[#75746f]">
+                  <figcaption className="text-[13px] text-[#000000] dark:text-[#75746f]">
                     {block.content.caption}
                   </figcaption>
                 )}
@@ -117,7 +117,7 @@ export function ArticleBody({ blocks }: ArticleBodyProps) {
             return (
               <ul key={block.id} className="my-4 space-y-2 list-disc list-inside">
                 {items.map((item, idx) => (
-                  <li key={idx} className="text-[#b9b8b2]">
+                  <li key={idx} className="text-[#000000] dark:text-[#b9b8b2]">
                     {item}
                   </li>
                 ))}
@@ -132,10 +132,10 @@ export function ArticleBody({ blocks }: ArticleBodyProps) {
                   href={block.content.url || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#d6d5cf] font-medium underline underline-offset-[3px] hover:text-white transition-colors duration-150 inline-flex items-center gap-1.5"
+                  className="text-[#000000] dark:text-[#d6d5cf] font-medium underline underline-offset-[3px] hover:text-[#000000] dark:hover:text-white transition-colors duration-150 inline-flex items-center gap-1.5"
                 >
                   <span>{block.content.text || block.content.url}</span>
-                  <span className="text-[13px] text-[#75746f]">↗</span>
+                  <span className="text-[13px] text-[#000000] dark:text-[#75746f]">↗</span>
                 </a>
               </div>
             );

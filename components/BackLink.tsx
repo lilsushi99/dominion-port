@@ -27,7 +27,7 @@ export function BackLink({ categorySlug }: BackLinkProps) {
       <Link
         href="/"
         onClick={handleBack}
-        className="text-[14px] text-[#8f8e89] hover:text-[#d6d5cf] transition-colors duration-150 inline-block py-1 focus:outline-none focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#d6d5cf]"
+        className="text-[14px] text-[#000000] dark:text-[#8f8e89] hover:text-[#000000] dark:hover:text-[#d6d5cf] transition-colors duration-150 inline-block py-1 focus:outline-none focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#000000] dark:focus-visible:outline-[#d6d5cf]"
       >
         back
       </Link>

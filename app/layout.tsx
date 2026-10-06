@@ -57,10 +57,16 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body suppressHydrationWarning className="min-h-screen selection:bg-[#555]/30 selection:text-white transition-colors duration-200">
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+      <body suppressHydrationWarning className="min-h-screen selection:bg-[#555]/30 selection:text-white transition-colors duration-200 relative bg-[var(--bg)] text-[var(--text)]">
+        {/* Background Noise Texture (behind all page content) */}
+        <div aria-hidden="true" className="noise-layer" />
+
+        {/* Content Layer (strictly sits above background noise) */}
+        <div className="content-layer">
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
+        </div>
       </body>
     </html>
   );

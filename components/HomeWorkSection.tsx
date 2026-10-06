@@ -104,7 +104,7 @@ export function HomeWorkSection({
         ))}
 
         {filteredItems.length === 0 && (
-          <div className="py-12 text-[14px] text-[#75746f] dark:text-[#8f8e89]">
+          <div className="py-12 text-[14px] text-[#000000] dark:text-[#8f8e89]">
             no items found in this category.
           </div>
         )}

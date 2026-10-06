@@ -66,7 +66,7 @@ export function ProfileAvatar({ images }: ProfileAvatarProps) {
   };
 
   return (
-    <div className="mb-6 inline-block relative z-10 isolate">
+    <div className="mb-6 inline-block relative z-20 isolate">
       <button
         type="button"
         onClick={handleCycle}
@@ -78,7 +78,7 @@ export function ProfileAvatar({ images }: ProfileAvatarProps) {
             ? `Profile picture ${currentIndex + 1} of ${images.length}. Click or tap to view next image.`
             : 'Profile picture of Dominion'
         }
-        className={`relative w-[56px] h-[56px] sm:w-[64px] sm:h-[64px] rounded-[22px] overflow-hidden bg-[#222222] border border-[#444444]/30 dark:border-[#555555]/30 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#eae9e4] shrink-0 block select-none ${
+        className={`relative z-10 w-[56px] h-[56px] sm:w-[64px] sm:h-[64px] rounded-[22px] overflow-hidden bg-[#e0ded8] dark:bg-[#222222] border border-[#000000]/10 dark:border-[#555555]/30 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#000000] dark:focus-visible:outline-[#eae9e4] shrink-0 block select-none ${
           hasMultiple ? 'cursor-pointer' : 'cursor-default'
         }`}
         style={{
@@ -98,7 +98,7 @@ export function ProfileAvatar({ images }: ProfileAvatarProps) {
               width={img.width || 128}
               height={img.height || 128}
               priority={idx === 0}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover relative z-10"
               sizes="(max-width: 640px) 56px, 64px"
               referrerPolicy="no-referrer"
             />

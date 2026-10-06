@@ -2,12 +2,12 @@
 :root,
 html[data-theme="dark"],
 html.dark {
-  --bg: #000000;
-  --bg-subtle: #141414;
-  --text: #d6d5cf;
-  --text-hi: #ffffff;
+  --bg: #2a2a2a;
+  --bg-subtle: #242424;
+  --text: #b9b8b2;
+  --text-hi: #eae9e4;
   --text-mid: #8f8e89;
-  --text-low: #6f6e69;
+  --text-low: #75746f;
   --rule: rgba(255, 255, 255, 0.12);
   --border-muted: rgba(255, 255, 255, 0.16);
   --radius: 4px;
@@ -28,22 +28,22 @@ html[data-theme="light"],
 html.light {
   --bg: #f2f2ee;
   --bg-subtle: #e6e5df;
-  --text: #1a1a1a;
+  --text: #000000;
   --text-hi: #000000;
-  --text-mid: #4a4944;
-  --text-low: #6f6e69;
-  --rule: rgba(0, 0, 0, 0.12);
-  --border-muted: rgba(0, 0, 0, 0.18);
+  --text-mid: #000000;
+  --text-low: #000000;
+  --rule: #000000;
+  --border-muted: #000000;
   --radius: 4px;
   --col: 655px;
 
   /* Button Tokens */
-  --btn-active-bg: #16151c;
-  --btn-active-text: #f2f2ee;
-  --btn-inactive-border: rgba(0, 0, 0, 0.2);
-  --btn-inactive-text: #4a4944;
+  --btn-active-bg: #000000;
+  --btn-active-text: #ffffff;
+  --btn-inactive-border: #000000;
+  --btn-inactive-text: #000000;
 
   /* Floating Blob Tokens */
-  --blob-fill: #16151c;
-  --blob-text: #f2f2ee;
+  --blob-fill: #000000;
+  --blob-text: #ffffff;
 }

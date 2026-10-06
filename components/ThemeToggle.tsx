@@ -26,7 +26,7 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
     <button
       type="button"
       onClick={toggleTheme}
-      className={`p-2 rounded-lg text-[#75746f] dark:text-[#8f8e89] hover:text-[#171717] dark:hover:text-[#eae9e4] hover:bg-[#000000]/5 dark:hover:bg-[#ffffff]/5 transition-colors focus:outline-none focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#8f8e89] ${className}`}
+      className={`p-2 rounded-lg text-[#000000] dark:text-[#8f8e89] hover:text-[#000000] dark:hover:text-[#eae9e4] hover:bg-[#000000]/5 dark:hover:bg-[#ffffff]/5 transition-colors focus:outline-none focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#000000] dark:focus-visible:outline-[#8f8e89] ${className}`}
       title={label}
       aria-label={label}
     >
