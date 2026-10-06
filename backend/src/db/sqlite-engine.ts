@@ -199,7 +199,7 @@ async function initializeSchemaAndSeeds(db: Database) {
       pub_year INTEGER NOT NULL,
       pub_month INTEGER NULL,
       pub_day INTEGER NULL,
-      category_id INTEGER NOT NULL,
+      category_id INTEGER NULL,
       summary TEXT NULL,
       cover_media_id INTEGER NULL,
       content_json TEXT NOT NULL,
@@ -240,12 +240,12 @@ async function initializeSchemaAndSeeds(db: Database) {
     db.run("ALTER TABLE cta_links ADD COLUMN platform TEXT NULL;");
   } catch {}
 
-  // Ensure default paper categories exist
+  // Mirror of migration 005 (embedded dev engine only)
   try {
-    db.run(`INSERT OR IGNORE INTO categories (id, slug, name, content_type, sort_order, is_active) VALUES (10, 'academic-papers', 'academic papers', 'paper', 1, 1);`);
-    db.run(`INSERT OR IGNORE INTO categories (id, slug, name, content_type, sort_order, is_active) VALUES (11, 'tech-papers', 'tech papers', 'paper', 2, 1);`);
-    db.run(`INSERT OR IGNORE INTO categories (id, slug, name, content_type, sort_order, is_active) VALUES (12, 'research-papers', 'research papers', 'paper', 3, 1);`);
+    db.run("ALTER TABLE site_settings ADD COLUMN background_mode TEXT NOT NULL DEFAULT 'off_black';");
   } catch {}
+  try { db.run("UPDATE papers SET category_id = NULL;"); } catch {}
+  try { db.run("DELETE FROM categories WHERE content_type = 'paper';"); } catch {}
 
   // Check if admin user exists, if not seed all default data
   const checkAdmin = db.exec('SELECT COUNT(*) as cnt FROM admin_users');
@@ -320,8 +320,7 @@ async function initializeSchemaAndSeeds(db: Database) {
       INSERT OR REPLACE INTO categories (id, slug, name, content_type, sort_order, is_active) VALUES
       (1, 'web-development', 'web development', 'project', 1, 1),
       (2, 'product-design', 'product design', 'project', 2, 1),
-      (3, 'dashboards', 'dashboards', 'project', 3, 1),
-      (4, 'papers', 'papers', 'paper', 4, 1);
+      (3, 'dashboards', 'dashboards', 'project', 3, 1);
     `);
 
     // Media Seed Assets

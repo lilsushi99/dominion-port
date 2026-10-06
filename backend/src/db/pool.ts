@@ -3,6 +3,33 @@ import mysql from 'mysql2/promise';
 import { env } from '../config/env';
 import { executeSqliteQuery } from './sqlite-engine';
 
+/**
+ * MySQL is the single source of truth. The embedded SQLite engine exists ONLY for local /
+ * preview environments without MySQL. In production it is disabled unless explicitly
+ * enabled with ALLOW_SQLITE_FALLBACK=true, because silently writing to a second database
+ * splits content (e.g. media rows saved in SQLite while MySQL holds the rest).
+ */
+export function sqliteFallbackAllowed(): boolean {
+  return process.env.ALLOW_SQLITE_FALLBACK === 'true' || process.env.NODE_ENV !== 'production';
+}
+
+function assertFallbackAllowed(cause?: unknown): void {
+  if (!sqliteFallbackAllowed()) {
+    const detail = cause instanceof Error ? cause.message : cause ? String(cause) : 'connection check failed';
+    throw new Error(`MySQL is unreachable (${detail}). Refusing to fall back to the embedded SQLite engine in production.`);
+  }
+  if (!fallbackWarned) {
+    fallbackWarned = true;
+    console.warn('[DB] MySQL unavailable, using EMBEDDED SQLITE fallback (non-production). Data is NOT in MySQL.');
+  }
+}
+
+let fallbackWarned = false;
+let activeEngine: 'mysql' | 'sqlite-fallback' | 'unknown' = 'unknown';
+export function getActiveDbEngine() {
+  return activeEngine;
+}
+
 let mysqlPool: mysql.Pool | null = null;
 let mysqlAvailable: boolean | null = null;
 let lastCheckTime = 0;
@@ -67,13 +94,14 @@ class ResilientConnection {
         return (await this.mysqlConn.query<T>(sql, params)) as [T, mysql.FieldPacket[]];
       } catch (err: any) {
         if (err.code === 'ECONNREFUSED' || err.code === 'PROTOCOL_CONNECTION_LOST') {
-          console.warn(`[DB] MySQL disconnected during query, falling back to embedded SQL engine.`);
+          assertFallbackAllowed(err);
           this.isMysql = false;
           return (await executeSqliteQuery(sql, Array.isArray(params) ? params : [params])) as unknown as [T, mysql.FieldPacket[]];
         }
         throw err;
       }
     }
+    assertFallbackAllowed();
     return (await executeSqliteQuery(sql, Array.isArray(params) ? params : (params ? [params] : []))) as unknown as [T, mysql.FieldPacket[]];
   }
 
@@ -126,15 +154,21 @@ class ResilientPool {
     if (isOnline) {
       try {
         const p = getMysqlPool();
-        return (await p.query<T>(sql, params)) as [T, mysql.FieldPacket[]];
+        const result = (await p.query<T>(sql, params)) as [T, mysql.FieldPacket[]];
+        activeEngine = 'mysql';
+        return result;
       } catch (err: any) {
         if (err.code === 'ECONNREFUSED' || err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'ER_BAD_DB_ERROR') {
+          assertFallbackAllowed(err);
           mysqlAvailable = false;
+          activeEngine = 'sqlite-fallback';
           return (await executeSqliteQuery(sql, Array.isArray(params) ? params : (params ? [params] : []))) as unknown as [T, mysql.FieldPacket[]];
         }
         throw err;
       }
     }
+    assertFallbackAllowed();
+    activeEngine = 'sqlite-fallback';
     return (await executeSqliteQuery(sql, Array.isArray(params) ? params : (params ? [params] : []))) as unknown as [T, mysql.FieldPacket[]];
   }
 
@@ -149,11 +183,13 @@ class ResilientPool {
         const p = getMysqlPool();
         const conn = await p.getConnection();
         return new ResilientConnection(conn, true);
-      } catch {
+      } catch (err) {
+        assertFallbackAllowed(err);
         mysqlAvailable = false;
         return new ResilientConnection(null, false);
       }
     }
+    assertFallbackAllowed();
     return new ResilientConnection(null, false);
   }
 

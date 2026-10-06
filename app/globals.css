@@ -15,6 +15,11 @@
   opacity: 0.28;
 }
 
+/* Pure black mode: remove the noise layer entirely (dark theme only) */
+html[data-bg="black"]:not([data-theme="light"]):not(.light) .noise-layer {
+  display: none;
+}
+
 /* Page content container sits above the background noise layer */
 .content-layer,
 main, header, article, section, footer, #work {

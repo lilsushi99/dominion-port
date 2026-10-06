@@ -47,3 +47,10 @@ html.light {
   --blob-fill: #000000;
   --blob-text: #ffffff;
 }
+
+/* Admin-selected background (dark theme only). The profile image is never affected:
+   noise lives on a separate fixed layer BEHIND the content layer (see globals.css). */
+html[data-bg="black"]:not([data-theme="light"]):not(.light) {
+  --bg: #000000;
+  --bg-subtle: #0a0a0a;
+}

@@ -77,12 +77,12 @@ Never store file-system paths in content. The editor stores **media IDs**:
 5. Links in text are `link` marks with `href` (validated `http(s)`/`mailto`), stored in the JSON and rendered as `<a>`. Home intro uses the same pipeline.
 Saved → API read → render round trip must be lossless; this is covered by tests (§9).
 
-Three kinds of address, never mixed: **filesystem path** (server only, `UPLOAD_DIR` + `relative_path`), **DB reference** (`media.id`), **public URL** (`PUBLIC_MEDIA_URL + /media/<relative_path>`, built at read time).
+Three kinds of address, never mixed: **filesystem path** (server only, `MEDIA_STORAGE_DIR` + `relative_path`), **DB reference** (`media.id`), **public URL** (`PUBLIC_MEDIA_URL + /media/<relative_path>`, built at read time).
 
 ## 5. Storage and persistence on Hostinger
-- Files live in `UPLOAD_DIR`, a directory **outside** the Git checkout and outside the build output that Hostinger replaces on deploy (I could not verify how `hbuild` behaves; see the check below). Example shape: `<account-home>/storage/uploads/YYYY/MM/<uuid>.<ext>`.
+- Files live in `MEDIA_STORAGE_DIR` (`UPLOAD_DIR` is only a deprecated alias), a directory **outside** the Git checkout and outside the build output that Hostinger replaces on deploy (I could not verify how `hbuild` behaves; see the check below). Example shape: `<account-home>/storage/uploads/YYYY/MM/<uuid>.<ext>`.
 - Express serves them from `GET /media/*` with range requests (video seeking), `Cache-Control: public, max-age=31536000, immutable` (names are unique), `X-Content-Type-Options: nosniff`.
-- `UPLOAD_DIR` is a required env var because the correct absolute path differs per account and must not be derived from the app folder. On boot the app **fails fast** if it doesn't exist, isn't writable, or resolves inside the app directory.
+- `MEDIA_STORAGE_DIR` is a required env var because the correct absolute path differs per account and must not be derived from the app folder. On boot the app **fails fast** if it doesn't exist, isn't writable, or resolves inside the app directory.
 - Deploy check (do this once, before launch): upload a test image, run two successive redeploys (including a rebuild), confirm the file and its DB row still serve. Also confirm the folder is included in Hostinger backups.
 - Database persists independently (MySQL service); migrations are additive and never drop data.
 - Storage sits behind a small driver interface (`save/delete/stream/stat`) so object storage can replace disk later.
@@ -130,10 +130,18 @@ Generated from the title (lowercase, hyphenated, ASCII-folded); unique with `-2`
 - After admin saves, the API calls `POST {SITE_URL}/api/revalidate` with a secret so public pages refresh immediately.
 
 ## 11. Environment variables (only what's required)
-`NODE_ENV` · `PORT` · `DB_HOST DB_PORT DB_USER DB_PASSWORD DB_NAME` · `UPLOAD_DIR` · `PUBLIC_MEDIA_URL` · `SITE_URL` · `ADMIN_ORIGIN` (if different) · `SESSION_COOKIE_DOMAIN` (only if site and API share a parent domain) · `REVALIDATE_SECRET` · frontend: `NEXT_PUBLIC_API_URL`, `API_URL` (server-side). `.env` is gitignored; `.env.example` lists names only.
+`NODE_ENV` · `PORT` · `DB_HOST DB_PORT DB_USER DB_PASSWORD DB_NAME` · `MEDIA_STORAGE_DIR` · `PUBLIC_MEDIA_URL` · `SITE_URL` · `ADMIN_ORIGIN` (if different) · `SESSION_COOKIE_DOMAIN` (only if site and API share a parent domain) · `REVALIDATE_SECRET` · frontend: `NEXT_PUBLIC_API_URL`, `API_URL` (server-side). `.env` is gitignored; `.env.example` lists names only.
 
 ## 12. Testing before launch
 Auth (login/logout/rate-limit/protected routes) · category CRUD + reorder + block-delete · project CRUD with year-only dates · primary image and video upload · gallery (add, caption, reorder, 10 cap, delete) · paper rich text round trip (bold, italic, link, heading, quote, image, video, text after media) · slug collisions and redirects · draft vs published visibility · video plays with seeking on the public page · two redeploys without losing media · DB reconnect behaviour.
 
 ## 13. Build order
 Docs → migrations → auth + `admin:create` → storage/media API → CMS endpoints → categories → projects → papers/editor → admin UI → frontend integration → Hostinger deploy + persistence check → launch checklist.
+
+## 14. Update: media, papers, background (latest)
+- **One media system.** Every upload (profile images, project primary/poster/gallery, paper cover, paper inline) goes through `POST /api/v1/admin/media/upload` → `media` table → files in `MEDIA_STORAGE_DIR`. URLs are built in ONE place, `buildPublicMediaUrl()` in `media.service.ts`; profile images use it too. Missing files return a real 404 (no synthesized placeholders except the 4 demo-seed names).
+- **Paper inline media** is resolved from the `media` table by `mediaId` on every read (`resolveInlineMedia` in `papers.service.ts`), so stale `src` values or old absolute paths stored in `content_html` can no longer break rendering.
+- **Papers are a top-level work type.** No paper categories; `papers.category_id` is nullable and unused. Migration 005 deletes `categories` rows of type `paper` (papers, projects and media are untouched). Only project categories can be created.
+- **Background mode.** `site_settings.background_mode` (`off_black` default | `black`) controls the dark-theme background; `app/layout.tsx` reads it from MySQL and sets `data-bg` on `<html>`. Noise is a separate fixed layer behind the content layer, so it never overlays the profile image.
+- **DB engine.** MySQL only in production. The embedded SQLite fallback runs only when `NODE_ENV !== 'production'` or `ALLOW_SQLITE_FALLBACK=true`. `GET /api/v1/admin/media/storage-status` reports `dbEngine`.
+- **Deploy order:** run `npm run migrate` (applies 005) before or together with the deploy.

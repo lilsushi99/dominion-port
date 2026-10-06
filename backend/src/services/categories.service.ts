@@ -36,7 +36,7 @@ export async function listCategories(options?: {
     `SELECT c.*,
        CASE 
          WHEN c.content_type = 'project' THEN (SELECT COUNT(*) FROM projects p WHERE p.category_id = c.id)
-         ELSE (SELECT COUNT(*) FROM papers pap WHERE pap.category_id = c.id)
+         ELSE 0
        END as item_count
      FROM categories c
      ${whereClause}

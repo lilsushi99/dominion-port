@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import sharp from 'sharp';
 import { pool } from '../db/pool';
 import { env } from '../config/env';
-import { saveFileToDisk, deleteFileFromDisk } from '../storage/disk';
+import { saveFileToDisk, deleteFileFromDisk, normalizeRelativePath } from '../storage/disk';
 
 export interface MediaRecord {
   id: number;
@@ -115,31 +115,26 @@ export function validateMagicBytes(buffer: Buffer, declaredMime: string): { vali
 }
 
 /**
- * Cleans raw relative_path stripping absolute filesystem directories if present
+ * Cleans a stored media reference to a path relative to the storage root
+ * (strips legacy absolute filesystem prefixes). External http(s) URLs pass through.
  */
 export function cleanRelativePath(rawPath: string): string {
   if (!rawPath) return '';
-  let cleaned = String(rawPath).trim().replace(/\\/g, '/');
+  const trimmed = String(rawPath).trim();
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  return normalizeRelativePath(trimmed);
+}
 
-  if (cleaned.startsWith('http://') || cleaned.startsWith('https://')) {
-    return cleaned;
-  }
-
-  const idx = cleaned.indexOf('media_uploads/');
-  if (idx !== -1) {
-    cleaned = cleaned.slice(idx + 'media_uploads/'.length);
-  } else {
-    const upIdx = cleaned.indexOf('uploads/');
-    if (upIdx !== -1) {
-      cleaned = cleaned.slice(upIdx + 'uploads/'.length);
-    }
-  }
-
-  cleaned = cleaned.replace(/^\/+/, '');
-  if (cleaned.startsWith('media/')) {
-    cleaned = cleaned.slice('media/'.length);
-  }
-  return cleaned;
+/**
+ * THE one place that turns a stored media reference into a browser-accessible URL.
+ * Never returns a filesystem path. Used for projects, galleries, papers AND profile images.
+ */
+export function buildPublicMediaUrl(rawPath?: string | null): string {
+  const rel = cleanRelativePath(rawPath || '');
+  if (!rel) return '';
+  if (rel.startsWith('http://') || rel.startsWith('https://')) return rel;
+  const base = env.PUBLIC_MEDIA_URL.replace(/\/+$/, '');
+  return `${base}/${rel.replace(/^\/+/, '')}`;
 }
 
 /**
@@ -149,14 +144,7 @@ export function formatMediaRecord(row: any): MediaRecord {
   if (!row) return null as any;
   const raw = row.relative_path || row.stored_name || '';
   const relPath = cleanRelativePath(raw);
-  const publicBase = env.PUBLIC_MEDIA_URL.replace(/\/+$/, '');
-  
-  let publicUrl = '';
-  if (relPath.startsWith('http://') || relPath.startsWith('https://')) {
-    publicUrl = relPath;
-  } else if (relPath) {
-    publicUrl = `${publicBase}/${relPath.replace(/^\/+/, '')}`;
-  }
+  const publicUrl = buildPublicMediaUrl(raw);
 
   return {
     id: row.id,

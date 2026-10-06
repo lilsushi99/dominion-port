@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { verifySession } from '@/backend/src/services/auth.service';
 import { env } from '@/backend/src/config/env';
+import { pool, getActiveDbEngine, sqliteFallbackAllowed } from '@/backend/src/db/pool';
 
 async function authenticate(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
@@ -45,8 +46,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: 'Authentication required.' } }, { status: 401 });
   }
 
+  // Touch the DB so the active engine is known; surfaces a silent SQLite fallback.
+  let dbEngine: string = 'unknown';
+  try {
+    await pool.query('SELECT 1');
+    dbEngine = getActiveDbEngine();
+  } catch (e: any) {
+    dbEngine = `unreachable: ${e?.message || e}`;
+  }
+
   const cwd = process.cwd();
-  const storageDir = env.MEDIA_STORAGE_DIR || env.UPLOAD_DIR;
+  const storageDir = env.MEDIA_STORAGE_DIR;
 
   let isWritable = false;
   try {
@@ -99,8 +109,15 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  if (dbEngine === 'sqlite-fallback') {
+    status = 'critical';
+    warnings.push('CRITICAL: Content is being read/written in the embedded SQLite fallback, NOT MySQL. Check DB_* settings.');
+  }
+
   return NextResponse.json({
     data: {
+      dbEngine,
+      sqliteFallbackAllowed: sqliteFallbackAllowed(),
       status,
       runtimeCwd: cwd,
       mediaStorageDir: storageDir,

@@ -29,7 +29,7 @@ Hostinger User Home / Domain Root (/home/u123456789/)
 │           ├── videos/              <-- Project MP4/WebM videos
 │           └── posters/             <-- Video preview poster stills
 │
-└── .env                             <-- Configures MEDIA_STORAGE_DIR to persistent path
+└── .env                             <-- Configures MEDIA_STORAGE_DIR to persistent path (UPLOAD_DIR is a deprecated alias)
 ```
 
 ---

@@ -45,7 +45,7 @@ export async function PUT(
       categoryId,
       slug,
       name,
-      content_type || 'project',
+      'project',
       sort_order ?? 0,
       is_active ?? true
     );

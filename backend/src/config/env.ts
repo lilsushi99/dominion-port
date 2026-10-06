@@ -12,7 +12,6 @@ export interface AppEnv {
   DB_USER: string;
   DB_PASSWORD: string;
   DB_NAME: string;
-  UPLOAD_DIR: string;
   MEDIA_STORAGE_DIR: string;
   PUBLIC_MEDIA_URL: string;
   SITE_URL: string;
@@ -66,7 +65,7 @@ function normalizePublicMediaUrl(val?: string): string {
  * Guaranteed to point outside deployment-managed transient directories (hbuilds/public_html).
  */
 export function resolvePersistentStorageDir(): string {
-  // 1. Explicit environment variable (Highest Priority)
+  // 1. Explicit environment variable (Highest Priority). UPLOAD_DIR is a deprecated alias.
   const envDir = process.env.MEDIA_STORAGE_DIR || process.env.UPLOAD_DIR;
   if (envDir && envDir !== 'dflamez_erp' && envDir.trim() !== '') {
     return path.resolve(envDir.trim());
@@ -142,7 +141,6 @@ export function validateEnv(): AppEnv {
     DB_USER: normalizeUser(process.env.DB_USER || process.env.DATABASE_USER),
     DB_PASSWORD: normalizePassword(process.env.DB_PASSWORD || process.env.DATABASE_PASSWORD),
     DB_NAME: normalizeDbName(process.env.DB_NAME || process.env.DATABASE_NAME),
-    UPLOAD_DIR: uploadDir,
     MEDIA_STORAGE_DIR: uploadDir,
     PUBLIC_MEDIA_URL: normalizePublicMediaUrl(process.env.PUBLIC_MEDIA_URL),
     SITE_URL: process.env.SITE_URL || 'http://localhost:3000',

@@ -19,42 +19,24 @@ import { PaperRecord } from '@/backend/src/services/papers.service';
 export default function HippoPapersPage() {
   const { csrfToken } = useHippoAuth();
   const [papers, setPapers] = useState<PaperRecord[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [deleteModal, setDeleteModal] = useState<PaperRecord | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
-  useEffect(() => {
-    let mounted = true;
-    fetch('/api/v1/admin/categories?type=paper')
-      .then((r) => r.json())
-      .then((j) => {
-        if (mounted && j.data) setCategories(j.data);
-      })
-      .catch((err) => console.error(err));
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
   const loadPapers = useCallback(() => {
-    const query = selectedCategory ? `?category=${selectedCategory}` : '';
-    fetch(`/api/v1/admin/papers${query}`)
+    fetch('/api/v1/admin/papers')
       .then((res) => res.json())
       .then((json) => {
         if (json.data) setPapers(json.data);
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
-  }, [selectedCategory]);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
-    const query = selectedCategory ? `?category=${selectedCategory}` : '';
-    fetch(`/api/v1/admin/papers${query}`)
+    fetch('/api/v1/admin/papers')
       .then((res) => res.json())
       .then((json) => {
         if (mounted && json.data) setPapers(json.data);
@@ -67,7 +49,7 @@ export default function HippoPapersPage() {
     return () => {
       mounted = false;
     };
-  }, [selectedCategory]);
+  }, []);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -166,18 +148,6 @@ export default function HippoPapersPage() {
           <Search size={15} className="absolute left-3 top-3 text-[#86858f]" />
         </div>
 
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="h-10 px-3 bg-[#fdfcff] border border-[#e4e3ea] rounded-[10px] text-[13px] text-[#16151c] outline-none w-full sm:w-auto"
-        >
-          <option value="">All Paper Categories</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.slug}>
-              {c.name}
-            </option>
-          ))}
-        </select>
       </div>
 
       {/* Table Card */}
@@ -203,7 +173,6 @@ export default function HippoPapersPage() {
               <thead>
                 <tr className="border-b border-[#e4e3ea] bg-[#fdfcff] text-[#86858f] text-[12px] font-medium h-10">
                   <th className="px-4">Title & Summary</th>
-                  <th className="px-4 w-36">Category</th>
                   <th className="px-4 w-20">Year</th>
                   <th className="px-4 w-28 text-center">Status</th>
                   <th className="px-4 w-28 text-right">Actions</th>
@@ -223,13 +192,6 @@ export default function HippoPapersPage() {
                       <p className="text-[12px] text-[#86858f] line-clamp-1 mt-0.5">
                         {paper.summary || 'No summary entered.'}
                       </p>
-                    </td>
-
-                    {/* Category */}
-                    <td className="px-4 py-3.5">
-                      <span className="px-2 py-0.5 rounded bg-[#f6f5fa] border border-[#e4e3ea] text-[12px] text-[#4a4955] capitalize">
-                        {paper.category_name || 'papers'}
-                      </span>
                     </td>
 
                     {/* Year */}

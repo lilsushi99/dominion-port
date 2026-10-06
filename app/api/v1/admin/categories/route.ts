@@ -8,7 +8,8 @@ export async function GET(req: NextRequest) {
   if (errorResponse) return errorResponse;
 
   try {
-    const contentType = (req.nextUrl.searchParams.get('type') as 'project' | 'paper') || undefined;
+    // Papers are a top-level work type; only project categories exist.
+    const contentType = 'project' as const;
 
     const data = await listCategories({ contentType, includeInactive: true });
     return NextResponse.json({ data });
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'Slug and name are required.' } }, { status: 400 });
     }
 
-    const created = await createCategory(slug, name, content_type || 'project', sort_order, is_active ?? true);
+    const created = await createCategory(slug, name, 'project', sort_order, is_active ?? true);
     return NextResponse.json({ data: created }, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ error: { code: 'SERVER_ERROR', message: err.message || 'Failed to create category.' } }, { status: 500 });

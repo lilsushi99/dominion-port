@@ -1,7 +1,7 @@
 // backend/src/services/papers.service.ts — Full Papers Service with Media Tracking & Slug History
 import { pool } from '../db/pool';
 import { generateSlug, recordSlugHistory, isSlugInUse } from './slug.service';
-import { formatMediaRecord, MediaRecord } from './media.service';
+import { formatMediaRecord, buildPublicMediaUrl, MediaRecord } from './media.service';
 
 export interface PaperRecord {
   id: number;
@@ -10,7 +10,7 @@ export interface PaperRecord {
   pub_year: number;
   pub_month: number | null;
   pub_day: number | null;
-  category_id: number;
+  category_id: number | null; // legacy, papers are a top-level type and need no category
   category_name?: string;
   category_slug?: string;
   summary: string | null;
@@ -31,7 +31,7 @@ export interface PaperPayload {
   pub_year: number;
   pub_month?: number | null;
   pub_day?: number | null;
-  category_id: number;
+  category_id?: number | null; // ignored: papers are top-level
   summary?: string | null;
   cover_media_id?: number | null;
   content_json: any;
@@ -71,6 +71,45 @@ async function syncPaperMedia(connection: any, paperId: number, mediaIds: number
   }
 }
 
+
+/**
+ * Media inside paper content is referenced by mediaId. The URLs stored in the editor
+ * output (src / data-src) are only a cache: they may be stale (older uploads, absolute
+ * server paths, a changed public base). Resolve every one from the media table on read so
+ * the browser always receives a valid public URL.
+ */
+async function resolveInlineMedia(paper: PaperRecord): Promise<PaperRecord> {
+  const html = paper.content_html || '';
+  const ids = new Set<number>(extractMediaIdsFromTipTapJson(paper.content_json));
+  for (const m of html.matchAll(/data-media-id="(\d+)"/g)) ids.add(Number(m[1]));
+  if (ids.size === 0) return paper;
+
+  const idList = Array.from(ids);
+  const [rows] = await pool.query<any[]>(
+    `SELECT id, relative_path FROM media WHERE id IN (${idList.map(() => '?').join(',')})`,
+    idList
+  );
+  const urlById = new Map<number, string>();
+  for (const r of rows) urlById.set(Number(r.id), buildPublicMediaUrl(r.relative_path));
+
+  const newHtml = html.replace(/<figure\b[^>]*\bdata-media-id="(\d+)"[\s\S]*?<\/figure>/g, (chunk, idStr) => {
+    const url = urlById.get(Number(idStr));
+    if (!url) return chunk;
+    return chunk.replace(/(\sdata-src|\ssrc)="[^"]*"/g, `$1="${url}"`);
+  });
+
+  const walk = (node: any): void => {
+    if (!node || typeof node !== 'object') return;
+    const mid = Number(node.attrs?.mediaId || node.attrs?.media_id);
+    if (mid && urlById.has(mid)) node.attrs.src = urlById.get(mid);
+    if (Array.isArray(node.content)) node.content.forEach(walk);
+  };
+  const json = paper.content_json ? JSON.parse(JSON.stringify(paper.content_json)) : paper.content_json;
+  walk(json);
+
+  return { ...paper, content_html: newHtml, content_json: json };
+}
+
 /**
  * Format raw SQL row to PaperRecord
  */
@@ -108,7 +147,7 @@ export function formatPaperRow(row: any): PaperRecord {
     pub_year: row.pub_year,
     pub_month: row.pub_month,
     pub_day: row.pub_day,
-    category_id: row.category_id || 4,
+    category_id: row.category_id ?? null,
     category_name: 'papers',
     category_slug: 'papers',
     summary: row.summary,
@@ -202,7 +241,7 @@ export async function getPaperById(id: number): Promise<PaperRecord | null> {
 
   const [rows] = await pool.query<any[]>(sql, [id]);
   if (rows.length === 0) return null;
-  return formatPaperRow(rows[0]);
+  return resolveInlineMedia(formatPaperRow(rows[0]));
 }
 
 /**
@@ -233,7 +272,7 @@ export async function getPaperBySlug(slug: string): Promise<PaperRecord | null> 
 
   const [rows] = await pool.query<any[]>(sql, [slug]);
   if (rows.length === 0) return null;
-  return formatPaperRow(rows[0]);
+  return resolveInlineMedia(formatPaperRow(rows[0]));
 }
 
 /**
@@ -246,7 +285,7 @@ export async function createPaper(payload: PaperPayload): Promise<PaperRecord> {
   if (!payload.pub_year) {
     throw new Error('Publication year is required.');
   }
-  const categoryId = payload.category_id || 4;
+  const categoryId: number | null = null; // papers are top-level, no category
 
   let finalSlug = payload.slug?.trim() ? generateSlug(payload.slug) : generateSlug(payload.title);
   let slugConflict = await isSlugInUse('paper', finalSlug);
@@ -330,7 +369,7 @@ export async function updatePaper(id: number, payload: Partial<PaperPayload>): P
     const pubYear = payload.pub_year !== undefined ? payload.pub_year : existing.pub_year;
     const pubMonth = payload.pub_month !== undefined ? payload.pub_month : existing.pub_month;
     const pubDay = payload.pub_day !== undefined ? payload.pub_day : existing.pub_day;
-    const categoryId = payload.category_id !== undefined ? payload.category_id : existing.category_id;
+    const categoryId: number | null = null; // papers are top-level, no category
     const summary = payload.summary !== undefined ? payload.summary : existing.summary;
     const coverMediaId = payload.cover_media_id !== undefined ? payload.cover_media_id : existing.cover_media_id;
     const contentHtml = payload.content_html !== undefined ? payload.content_html : existing.content_html;
