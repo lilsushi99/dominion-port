@@ -12,18 +12,19 @@ export interface FileRangeInfo {
 }
 
 /**
+ * The single persistent media directory (MEDIA_STORAGE_DIR). It must live OUTSIDE the
+ * Git checkout / hbuilds so deployments never touch it.
+ */
+function storageRoot(): string {
+  return path.resolve(env.MEDIA_STORAGE_DIR);
+}
+
+/**
  * Initializes the persistent upload directory structure.
  */
 export function ensureUploadDirs(): void {
-  const baseDir = env.MEDIA_STORAGE_DIR || env.UPLOAD_DIR;
-  const dirs = [
-    baseDir,
-    path.join(baseDir, 'images'),
-    path.join(baseDir, 'videos'),
-    path.join(baseDir, 'posters')
-  ];
-
-  for (const dir of dirs) {
+  const baseDir = storageRoot();
+  for (const dir of [baseDir, path.join(baseDir, 'images'), path.join(baseDir, 'videos'), path.join(baseDir, 'posters')]) {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
@@ -31,131 +32,151 @@ export function ensureUploadDirs(): void {
 }
 
 /**
- * Resolves a safe absolute path inside MEDIA_STORAGE_DIR preventing directory traversal.
- * Also checks seed/bundled assets and auto-migrates them into persistent storage.
+ * Normalizes a stored/legacy media reference into a clean path relative to the storage root.
+ * Handles legacy values such as "/media/images/x.png", "uploads/x.png" or an absolute
+ * ".../media_uploads/images/x.png" path that older code stored in the database.
  */
-export function getSafeFilePath(relativePath: string): string | null {
-  const baseDir = env.MEDIA_STORAGE_DIR || env.UPLOAD_DIR;
-  
-  // Clean raw relative path, stripping leading slashes and redundant prefixes
-  let cleanRelative = String(relativePath || '').replace(/\\/g, '/').replace(/^\/+/, '');
-  
-  const prefixesToStrip = ['media_uploads/', 'uploads/', 'media/'];
-  for (const p of prefixesToStrip) {
-    if (cleanRelative.startsWith(p)) {
-      cleanRelative = cleanRelative.slice(p.length);
-    }
+export function normalizeRelativePath(raw: string): string {
+  let p = String(raw || '').trim().replace(/\\/g, '/');
+  const idx = p.lastIndexOf('media_uploads/');
+  if (idx !== -1) p = p.slice(idx + 'media_uploads/'.length);
+  p = p.replace(/^\/+/, '');
+  for (const prefix of ['media_uploads/', 'uploads/', 'media/']) {
+    if (p.startsWith(prefix)) p = p.slice(prefix.length);
   }
+  return p;
+}
 
-  // Prevent directory traversal
-  cleanRelative = path.normalize(cleanRelative).replace(/^(\.\.[\/\\])+/, '');
-  const baseName = path.basename(cleanRelative);
+/**
+ * Safe absolute path INSIDE the storage root for a (possibly not yet existing) relative path.
+ * Returns null on traversal attempts. Used for writes and as the base of reads.
+ */
+export function resolveStoragePath(relativePath: string): string | null {
+  const root = storageRoot();
+  const clean = normalizeRelativePath(relativePath);
+  if (!clean) return null;
+  const target = path.resolve(root, clean);
+  if (target !== root && !target.startsWith(root + path.sep)) return null;
+  return target;
+}
 
-  // Collect all plausible persistent storage locations (especially on Hostinger)
+
+/**
+ * Folders that older versions of the app wrote to or searched. They are READ-ONLY fallbacks:
+ * when a file is found there it is copied into the main storage folder, so after one
+ * visit/scan everything lives in MEDIA_STORAGE_DIR. Configure extra ones with
+ * MEDIA_LEGACY_DIRS (comma-separated absolute paths).
+ */
+export function getLegacyDirs(): string[] {
   const cwd = process.cwd();
-  const candidateBaseDirs = [
-    baseDir,
-    process.env.MEDIA_STORAGE_DIR,
+  const root = storageRoot();
+  const raw = [
     process.env.UPLOAD_DIR,
+    ...String(process.env.MEDIA_LEGACY_DIRS || '').split(','),
     '/home/u475835399/domains/brandoai.online/media_uploads',
+    '/home/u475835399/domains/BrandoAI.online/media_uploads',
     '/home/u475835399/media_uploads',
     path.resolve(cwd, 'media_uploads'),
     path.resolve(cwd, '../media_uploads'),
     path.resolve(cwd, '../../media_uploads'),
     path.resolve(cwd, '../persistent_media_uploads'),
-    path.resolve(cwd, 'persistent_media_uploads')
-  ].filter(Boolean).map((d) => path.resolve(d!));
+    path.resolve(cwd, 'persistent_media_uploads'),
+  ]
+    .map((d) => (d || '').trim())
+    .filter(Boolean)
+    .map((d) => path.resolve(d));
+  return Array.from(new Set(raw)).filter((d) => d !== root && fs.existsSync(d));
+}
 
-  const uniqueBaseDirs = Array.from(new Set(candidateBaseDirs));
+function mediaSubfolderFor(relative: string, baseName: string): string {
+  const top = relative.split('/')[0];
+  if (['images', 'videos', 'posters'].includes(top)) return top;
+  return /\.(mp4|webm|mov|m4v)$/i.test(baseName) ? 'videos' : 'images';
+}
 
-  // Check candidate locations across persistent storage
-  for (const bDir of uniqueBaseDirs) {
-    if (!fs.existsSync(bDir)) continue;
+/** Looks for a file in the legacy folders and copies it into the main storage folder. */
+function adoptFromLegacyDirs(relativePath: string): string | null {
+  const root = storageRoot();
+  const clean = normalizeRelativePath(relativePath);
+  const baseName = path.basename(clean);
+  if (!clean || !baseName) return null;
+  const isFile = (p: string) => fs.existsSync(p) && !fs.statSync(p).isDirectory();
 
-    const subCandidates = [
-      path.resolve(bDir, cleanRelative),
-      path.resolve(bDir, baseName),
-      path.resolve(bDir, 'images', baseName),
-      path.resolve(bDir, 'videos', baseName),
-      path.resolve(bDir, 'posters', baseName)
-    ];
-
-    for (const cand of subCandidates) {
-      if (fs.existsSync(cand) && !fs.statSync(cand).isDirectory()) {
+  for (const dir of getLegacyDirs()) {
+    const candidates = [path.resolve(dir, clean), path.join(dir, baseName), path.join(dir, 'images', baseName), path.join(dir, 'videos', baseName), path.join(dir, 'posters', baseName)]
+      .filter((c) => c === dir || c.startsWith(dir + path.sep));
+    for (const cand of candidates) {
+      if (!isFile(cand)) continue;
+      try {
+        const sub = mediaSubfolderFor(clean, baseName);
+        const dest = path.join(root, sub, baseName);
+        fs.mkdirSync(path.dirname(dest), { recursive: true });
+        if (!fs.existsSync(dest)) fs.copyFileSync(cand, dest);
+        console.log(`[STORAGE] Adopted legacy file into main storage: ${cand} -> ${dest}`);
+        return dest;
+      } catch (err) {
+        console.warn(`[STORAGE] Could not copy ${cand} into main storage, serving it in place:`, err);
         return cand;
       }
     }
   }
+  return null;
+}
 
-  // Fallback to primary target path for new writes
-  const primaryTarget = path.resolve(baseDir, cleanRelative);
+// Demo rows created by 002_seed_initial_data.sql point at files that were never uploaded.
+// Only these exact names get a generated placeholder; everything else is a real 404.
+const SEED_PLACEHOLDER_NAMES = new Set(['sample-video.mp4', 'sample-poster.svg', 'sample-thumb.svg', 'article-figure.svg']);
 
-  // Check fallback static bundled seed assets (e.g. from /public/seed_media or /public)
-  const seedCandidates = [
-    path.resolve(cwd, 'public/seed_media', cleanRelative),
-    path.resolve(cwd, 'public/seed_media/posters', baseName),
-    path.resolve(cwd, 'public/seed_media/previews', baseName),
-    path.resolve(cwd, 'public/seed_media/gallery', baseName),
-    path.resolve(cwd, 'public/seed_media/dashboards', baseName),
-    path.resolve(cwd, 'public/media', cleanRelative),
-    path.resolve(cwd, 'public', cleanRelative),
-    path.resolve(cwd, 'public/media', baseName),
-    path.resolve(cwd, 'public/seed_media/previews/northwind-preview.webp')
-  ];
+/**
+ * Resolves an EXISTING file for reading: the main storage folder first, then the legacy
+ * folders (see getLegacyDirs), copying anything found there into the main folder.
+ * Returns null when the file does not exist, so callers answer 404 instead of faking content.
+ */
+export function getSafeFilePath(relativePath: string): string | null {
+  const primary = resolveStoragePath(relativePath);
+  if (!primary) return null;
 
-  for (const candidate of seedCandidates) {
-    if (fs.existsSync(candidate) && !fs.statSync(candidate).isDirectory()) {
-      try {
-        const targetDir = path.dirname(primaryTarget);
-        if (!fs.existsSync(targetDir)) {
-          fs.mkdirSync(targetDir, { recursive: true, mode: 0o755 });
-        }
-        fs.copyFileSync(candidate, primaryTarget);
-        return primaryTarget;
-      } catch (err) {
-        return candidate;
-      }
-    }
+  const isFile = (p: string) => fs.existsSync(p) && !fs.statSync(p).isDirectory();
+  if (isFile(primary)) return primary;
+
+  const root = storageRoot();
+  const baseName = path.basename(primary);
+  for (const sub of ['images', 'videos', 'posters']) {
+    const cand = path.join(root, sub, baseName);
+    if (isFile(cand)) return cand;
   }
 
-  // If a sample video (.mp4) is requested and missing, synthesize a minimal valid MP4 using ffmpeg
-  if (baseName.endsWith('.mp4') || baseName.endsWith('.webm')) {
-    try {
-      const targetDir = path.dirname(primaryTarget);
-      if (!fs.existsSync(targetDir)) {
-        fs.mkdirSync(targetDir, { recursive: true, mode: 0o755 });
-      }
-      const { execSync } = require('child_process');
-      execSync(`ffmpeg -y -f lavfi -i color=c=black:s=1280x720:d=3 -c:v libx264 -pix_fmt yuv420p "${primaryTarget}"`, { stdio: 'ignore' });
-      if (fs.existsSync(primaryTarget)) {
-        return primaryTarget;
-      }
-    } catch (err) {
-      console.warn(`[STORAGE] Could not create fallback video ${primaryTarget}:`, err);
-    }
+  const adopted = adoptFromLegacyDirs(relativePath);
+  if (adopted) return adopted;
+
+  if (SEED_PLACEHOLDER_NAMES.has(baseName)) {
+    return ensureSeedPlaceholder(primary, baseName);
   }
 
-  // If a sample SVG is requested and missing, generate a clean editorial SVG
-  if (baseName.endsWith('.svg')) {
-    try {
-      const targetDir = path.dirname(primaryTarget);
-      if (!fs.existsSync(targetDir)) {
-        fs.mkdirSync(targetDir, { recursive: true, mode: 0o755 });
-      }
+  return null;
+}
+
+function ensureSeedPlaceholder(target: string, baseName: string): string | null {
+  try {
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    if (baseName.endsWith('.svg')) {
       const label = baseName.replace(/\.svg$/, '').replace(/[-_]/g, ' ');
-      const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750" fill="none">
-  <rect width="1200" height="750" fill="#1c1b22"/>
-  <rect x="40" y="40" width="1120" height="670" rx="8" stroke="#31303d" stroke-width="2" stroke-dasharray="8 8"/>
-  <text x="600" y="375" fill="#8f8e89" font-family="system-ui, sans-serif" font-size="24" font-weight="500" text-anchor="middle" dominant-baseline="middle">${label}</text>
-</svg>`;
-      fs.writeFileSync(primaryTarget, svgContent, 'utf-8');
-      return primaryTarget;
-    } catch (err) {
-      console.warn(`[STORAGE] Could not create fallback SVG ${primaryTarget}:`, err);
+      fs.writeFileSync(
+        target,
+        `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750"><rect width="1200" height="750" fill="#1c1b22"/><text x="600" y="375" fill="#8f8e89" font-family="system-ui,sans-serif" font-size="24" text-anchor="middle" dominant-baseline="middle">${label}</text></svg>`,
+        'utf-8'
+      );
+      return target;
     }
+    if (baseName.endsWith('.mp4')) {
+      const { execFileSync } = require('child_process');
+      execFileSync('ffmpeg', ['-y', '-f', 'lavfi', '-i', 'color=c=black:s=1280x720:d=3', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', target], { stdio: 'ignore' });
+      return fs.existsSync(target) ? target : null;
+    }
+  } catch (err) {
+    console.warn(`[STORAGE] Could not create seed placeholder ${target}:`, err);
   }
-
-  return primaryTarget;
+  return null;
 }
 
 /**
@@ -163,7 +184,7 @@ export function getSafeFilePath(relativePath: string): string | null {
  */
 export async function saveFileToDisk(relativePath: string, data: Buffer): Promise<string> {
   ensureUploadDirs();
-  const safePath = getSafeFilePath(relativePath);
+  const safePath = resolveStoragePath(relativePath);
   if (!safePath) {
     throw new Error('Invalid or unsafe target file path.');
   }

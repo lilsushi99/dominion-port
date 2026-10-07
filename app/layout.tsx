@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter_Tight } from 'next/font/google';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { getSiteSettings } from '@/backend/src/services/cms.service';
 import './globals.css';
 
 const interTight = Inter_Tight({
@@ -25,13 +26,23 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+// Background mode comes from MySQL (Admin → Home CMS → Intro & Hero), never from client state.
+export const dynamic = 'force-dynamic';
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  let backgroundMode: 'black' | 'off_black' = 'off_black';
+  try {
+    backgroundMode = (await getSiteSettings()).background_mode;
+  } catch (err) {
+    console.warn('[LAYOUT] Could not read background_mode, using off_black:', err);
+  }
+
   return (
-    <html lang="en" className={interTight.variable} suppressHydrationWarning>
+    <html lang="en" className={interTight.variable} data-bg={backgroundMode} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{

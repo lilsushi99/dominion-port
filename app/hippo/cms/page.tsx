@@ -41,6 +41,7 @@ export default function HippoCmsPage() {
   const [introHtml, setIntroHtml] = useState('');
   const [signOff, setSignOff] = useState('');
   const [projectsHeading, setProjectsHeading] = useState('');
+  const [backgroundMode, setBackgroundMode] = useState<'black' | 'off_black'>('off_black');
 
   // Profile Pictures
   const [profileImages, setProfileImages] = useState<ProfileImageItem[]>([]);
@@ -117,6 +118,7 @@ export default function HippoCmsPage() {
         }
         if (settingsJson.data) {
           setProjectsHeading(settingsJson.data.projects_heading || '');
+          setBackgroundMode(settingsJson.data.background_mode === 'black' ? 'black' : 'off_black');
         }
         if (ctaJson.data) {
           setCtaLinks(ctaJson.data);
@@ -272,7 +274,7 @@ export default function HippoCmsPage() {
         fetch('/api/v1/admin/cms/settings', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
-          body: JSON.stringify({ projects_heading: projectsHeading })
+          body: JSON.stringify({ projects_heading: projectsHeading, background_mode: backgroundMode })
         })
       ]);
       showToast('Home content and heading saved!');
@@ -462,6 +464,39 @@ export default function HippoCmsPage() {
       {/* TAB 1: INTRO & HERO */}
       {activeTab === 'intro' && (
         <div className="bg-[#fdfcff] border border-[#e4e3ea] rounded-2xl p-6 shadow-[0_1px_2px_rgba(22,21,28,0.04)] space-y-6">
+          {/* PAGE BACKGROUND (dark theme) */}
+          <div className="pb-6 border-b border-[#e4e3ea] space-y-3">
+            <div>
+              <h2 className="text-[15px] font-semibold text-[#16151c]">Page Background (dark mode)</h2>
+              <p className="text-[12px] text-[#86858f] mt-0.5">
+                Applies to the public site in dark mode. Save with the button below.
+              </p>
+            </div>
+            <div role="radiogroup" aria-label="Background mode" className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {([
+                { value: 'off_black', label: 'Off-black / Noise', hint: 'Dark grey with the subtle noise texture', swatch: '#2a2a2a' },
+                { value: 'black', label: 'Black', hint: 'Pure #000000, no texture', swatch: '#000000' }
+              ] as const).map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={backgroundMode === opt.value}
+                  onClick={() => setBackgroundMode(opt.value)}
+                  className={`flex items-center gap-3 text-left p-3 rounded-xl border transition-colors ${
+                    backgroundMode === opt.value ? 'border-[#5b4be0] bg-[#ece9fd]' : 'border-[#e4e3ea] bg-[#fdfcff] hover:bg-[#f6f5fa]'
+                  }`}
+                >
+                  <span className="w-9 h-9 rounded-lg border border-[#cfcdd8] shrink-0" style={{ background: opt.swatch }} />
+                  <span>
+                    <span className="block text-[13px] font-medium text-[#16151c]">{opt.label}</span>
+                    <span className="block text-[12px] text-[#86858f]">{opt.hint}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* PROFILE PICTURES SECTION */}
           <div className="pb-6 border-b border-[#e4e3ea] space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -917,7 +952,7 @@ export default function HippoCmsPage() {
                   <option value="email">Email</option>
                   <option value="linkedin">LinkedIn</option>
                   <option value="whatsapp">WhatsApp</option>
-                  <option value="twitter">X / Twitter</option>
+                  <option value="twitter">X</option>
                   <option value="instagram">Instagram</option>
                   <option value="dribbble">Dribbble</option>
                   <option value="behance">Behance</option>
@@ -1008,7 +1043,7 @@ export default function HippoCmsPage() {
                   <option value="email">Email</option>
                   <option value="linkedin">LinkedIn</option>
                   <option value="whatsapp">WhatsApp</option>
-                  <option value="twitter">X / Twitter</option>
+                  <option value="twitter">X</option>
                   <option value="instagram">Instagram</option>
                   <option value="dribbble">Dribbble</option>
                   <option value="behance">Behance</option>

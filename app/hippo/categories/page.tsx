@@ -9,8 +9,6 @@ import {
   ArrowUp,
   ArrowDown,
   Check,
-  FolderGit2,
-  FileText
 } from 'lucide-react';
 import { useHippoAuth } from '@/components/admin/HippoAuthProvider';
 import { Category } from '@/backend/src/services/categories.service';
@@ -24,7 +22,6 @@ export default function HippoCategoriesPage() {
 
   const [formName, setFormName] = useState('');
   const [formSlug, setFormSlug] = useState('');
-  const [formType, setFormType] = useState<'project' | 'paper'>('project');
   const [formActive, setFormActive] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -36,7 +33,7 @@ export default function HippoCategoriesPage() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch('/api/v1/admin/categories');
+      const res = await fetch('/api/v1/admin/categories?type=project');
       const json = await res.json();
       if (json.data) setCategories(json.data);
     } catch (err) {
@@ -48,7 +45,7 @@ export default function HippoCategoriesPage() {
 
   useEffect(() => {
     let mounted = true;
-    fetch('/api/v1/admin/categories')
+    fetch('/api/v1/admin/categories?type=project')
       .then((res) => res.json())
       .then((json) => {
         if (mounted && json.data) setCategories(json.data);
@@ -67,7 +64,6 @@ export default function HippoCategoriesPage() {
     setEditingCategory(null);
     setFormName('');
     setFormSlug('');
-    setFormType('project');
     setFormActive(true);
     setError(null);
     setModalOpen(true);
@@ -77,7 +73,6 @@ export default function HippoCategoriesPage() {
     setEditingCategory(cat);
     setFormName(cat.name);
     setFormSlug(cat.slug);
-    setFormType(cat.content_type);
     setFormActive(cat.is_active);
     setError(null);
     setModalOpen(true);
@@ -113,7 +108,7 @@ export default function HippoCategoriesPage() {
         body: JSON.stringify({
           name: formName.trim(),
           slug: formSlug.trim(),
-          content_type: formType,
+          content_type: 'project',
           is_active: formActive,
           sort_order: editingCategory?.sort_order ?? categories.length + 1
         })
@@ -238,10 +233,6 @@ export default function HippoCategoriesPage() {
                     <span className="text-[14px] font-semibold text-[#16151c] capitalize">
                       {cat.name}
                     </span>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-[#f6f5fa] border border-[#e4e3ea] text-[#4a4955]">
-                      {cat.content_type === 'project' ? <FolderGit2 size={11} /> : <FileText size={11} />}
-                      <span>{cat.content_type}</span>
-                    </span>
                   </div>
                   <div className="text-[12px] font-mono text-[#86858f] mt-0.5">
                     /{cat.slug} · <span className="font-sans font-medium text-[#4a4955]">{cat.item_count || 0} items</span>
@@ -317,20 +308,6 @@ export default function HippoCategoriesPage() {
                   placeholder="e.g. web-development"
                   className="w-full h-10 px-3 font-mono bg-[#fdfcff] border border-[#e4e3ea] rounded-xl text-[13px] text-[#16151c] outline-none"
                 />
-              </div>
-
-              <div>
-                <label className="block text-[13px] font-medium text-[#4a4955] mb-1">
-                  Content Type
-                </label>
-                <select
-                  value={formType}
-                  onChange={(e) => setFormType(e.target.value as 'project' | 'paper')}
-                  className="w-full h-10 px-3 bg-[#fdfcff] border border-[#e4e3ea] rounded-xl text-[13px] text-[#16151c] outline-none"
-                >
-                  <option value="project">Project Category</option>
-                  <option value="paper">Paper Category</option>
-                </select>
               </div>
 
               <div className="flex items-center gap-2 pt-1">

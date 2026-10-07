@@ -1,9 +1,13 @@
 // backend/src/services/cms.service.ts — CMS Data Service
 import { pool } from '../db/pool';
+import { buildPublicMediaUrl } from './media.service';
+
+export type BackgroundMode = 'black' | 'off_black';
 
 export interface SiteSettings {
   id: number;
   projects_heading: string;
+  background_mode: BackgroundMode;
   updated_at: string;
 }
 
@@ -50,6 +54,7 @@ export interface ProfileImageItem {
 export interface PublicProfilePayload {
   site_settings: {
     projects_heading: string;
+    background_mode: BackgroundMode;
   };
   home_content: {
     body_html: string;
@@ -75,19 +80,24 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     return {
       id: 1,
       projects_heading: "p.s. things i've made and written…",
+      background_mode: 'off_black',
       updated_at: new Date().toISOString()
     };
   }
-  return rows[0];
+  return { ...rows[0], background_mode: rows[0].background_mode === 'black' ? 'black' : 'off_black' };
 }
 
 /**
  * Updates site settings.
  */
-export async function updateSiteSettings(projects_heading: string): Promise<SiteSettings> {
+export async function updateSiteSettings(
+  projects_heading: string,
+  background_mode: BackgroundMode = 'off_black'
+): Promise<SiteSettings> {
+  const mode: BackgroundMode = background_mode === 'black' ? 'black' : 'off_black';
   await pool.query(
-    'INSERT INTO site_settings (id, projects_heading) VALUES (1, ?) ON DUPLICATE KEY UPDATE projects_heading = VALUES(projects_heading)',
-    [projects_heading.trim()]
+    'INSERT INTO site_settings (id, projects_heading, background_mode) VALUES (1, ?, ?) ON DUPLICATE KEY UPDATE projects_heading = VALUES(projects_heading), background_mode = VALUES(background_mode)',
+    [projects_heading.trim(), mode]
   );
   return getSiteSettings();
 }
@@ -369,9 +379,7 @@ export async function listProfileImages(): Promise<ProfileImageItem[]> {
       id: r.id,
       media_id: r.media_id,
       sort_order: r.sort_order,
-      url: r.relative_path.startsWith('http') || r.relative_path.startsWith('/')
-        ? r.relative_path
-        : `/media/${r.relative_path}`,
+      url: buildPublicMediaUrl(r.relative_path),
       alt: r.alt || 'Dominion',
       width: r.width || 128,
       height: r.height || 128
@@ -430,7 +438,8 @@ export async function getPublicProfile(): Promise<PublicProfilePayload> {
 
   return {
     site_settings: {
-      projects_heading: siteSettings.projects_heading
+      projects_heading: siteSettings.projects_heading,
+      background_mode: siteSettings.background_mode
     },
     home_content: {
       body_html: homeContent.body_html,

@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import path from 'path';
 import publicRouter from './routes/public';
+import { env } from './config/env';
 
 const app = express();
 
@@ -19,7 +20,8 @@ app.use(cors({
 app.use(express.json());
 
 // Static uploads with range request support for self-hosted videos
-const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, '../uploads');
+// Legacy standalone Express entry (not used by `next start`). Uses the SAME media directory.
+const uploadDir = env.MEDIA_STORAGE_DIR;
 app.use('/media', express.static(uploadDir, {
   setHeaders: (res) => {
     res.set('Accept-Ranges', 'bytes');

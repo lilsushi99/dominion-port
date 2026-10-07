@@ -12,7 +12,6 @@ import {
   Image as ImageIcon,
   Trash2,
   Calendar,
-  Layers,
   Check,
   Eye,
   FileText
@@ -38,7 +37,6 @@ export function PaperForm({ paper, isNew = false }: PaperFormProps) {
   const [pubYear, setPubYear] = useState<number>(paper?.pub_year || 2026);
   const [pubMonth, setPubMonth] = useState<number | ''>(paper?.pub_month || '');
   const [pubDay, setPubDay] = useState<number | ''>(paper?.pub_day || '');
-  const [categoryId, setCategoryId] = useState<number | ''>(paper?.category_id || '');
   const [summary, setSummary] = useState(paper?.summary || '');
   const [coverMedia, setCoverMedia] = useState<MediaRecord | null>(paper?.cover_media || null);
   const [status, setStatus] = useState<'draft' | 'published'>(paper?.status || 'draft');
@@ -48,7 +46,6 @@ export function PaperForm({ paper, isNew = false }: PaperFormProps) {
   const [contentHtml, setContentHtml] = useState<string>(paper?.content_html || '');
 
   // Meta & Aux State
-  const [categories, setCategories] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -57,25 +54,6 @@ export function PaperForm({ paper, isNew = false }: PaperFormProps) {
   // Media Picker Modal for Cover
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const [mediaList, setMediaList] = useState<MediaRecord[]>([]);
-
-  useEffect(() => {
-    let mounted = true;
-    fetch('/api/v1/admin/categories?type=paper')
-      .then((r) => r.json())
-      .then((j) => {
-        if (mounted && j.data) {
-          setCategories(j.data);
-          if (isNew && j.data.length > 0 && !categoryId) {
-            setCategoryId(j.data[0].id);
-          }
-        }
-      })
-      .catch((e) => console.error(e));
-
-    return () => {
-      mounted = false;
-    };
-  }, [isNew, categoryId]);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -118,7 +96,6 @@ export function PaperForm({ paper, isNew = false }: PaperFormProps) {
       pub_year: Number(pubYear),
       pub_month: pubMonth !== '' ? Number(pubMonth) : null,
       pub_day: pubDay !== '' ? Number(pubDay) : null,
-      category_id: Number(categoryId) || 4,
       summary: summary.trim() || null,
       cover_media_id: coverMedia?.id || null,
       content_json: contentJson,
@@ -385,36 +362,6 @@ export function PaperForm({ paper, isNew = false }: PaperFormProps) {
               </div>
             </div>
             {errors.pubYear && <p className="text-[12px] text-[#d92d4a]">{errors.pubYear}</p>}
-          </div>
-
-          {/* Taxonomy / Category Card */}
-          <div className="bg-[#fdfcff] border border-[#e4e3ea] rounded-2xl p-5 shadow-[0_1px_2px_rgba(22,21,28,0.04)] space-y-4">
-            <div className="flex items-center gap-2 text-[14px] font-semibold text-[#16151c] border-b border-[#e4e3ea] pb-2.5">
-              <Layers size={15} className="text-[#5b4be0]" />
-              <span>Category Taxonomy</span>
-            </div>
-
-            <div>
-              <label className="block text-[12px] font-medium text-[#4a4955] mb-1.5">
-                Assigned Category <span className="text-[#d92d4a]">*</span>
-              </label>
-              <select
-                value={categoryId}
-                onChange={(e) => {
-                  setCategoryId(Number(e.target.value));
-                  setIsDirty(true);
-                }}
-                className="w-full h-10 px-3 bg-[#fdfcff] border border-[#e4e3ea] rounded-xl text-[13px] text-[#16151c] outline-none"
-              >
-                <option value="">Select paper category...</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-              {errors.categoryId && <p className="text-[12px] text-[#d92d4a] mt-1">{errors.categoryId}</p>}
-            </div>
           </div>
 
           {/* Cover Media Card */}

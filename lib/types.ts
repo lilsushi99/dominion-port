@@ -97,7 +97,7 @@ export interface ProjectDetail {
   }>;
 }
 
-export type ArticleBlockType = 'heading' | 'paragraph' | 'image' | 'quote' | 'list' | 'link' | 'code';
+export type ArticleBlockType = 'heading' | 'paragraph' | 'image' | 'video' | 'quote' | 'list' | 'link' | 'code';
 
 export interface ArticleBlock {
   id: number;

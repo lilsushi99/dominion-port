@@ -4,6 +4,8 @@ import fs from 'fs';
 import path from 'path';
 import { verifySession } from '@/backend/src/services/auth.service';
 import { env } from '@/backend/src/config/env';
+import { pool, getActiveDbEngine, sqliteFallbackAllowed } from '@/backend/src/db/pool';
+import { getSafeFilePath, getLegacyDirs } from '@/backend/src/storage/disk';
 
 async function authenticate(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
@@ -45,8 +47,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: 'Authentication required.' } }, { status: 401 });
   }
 
+  // Touch the DB so the active engine is known; surfaces a silent SQLite fallback.
+  let dbEngine: string = 'unknown';
+  try {
+    await pool.query('SELECT 1');
+    dbEngine = getActiveDbEngine();
+  } catch (e: any) {
+    dbEngine = `unreachable: ${e?.message || e}`;
+  }
+
   const cwd = process.cwd();
-  const storageDir = env.MEDIA_STORAGE_DIR || env.UPLOAD_DIR;
+  const storageDir = env.MEDIA_STORAGE_DIR;
 
   let isWritable = false;
   try {
@@ -99,8 +110,34 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  // Scan every media row. Files found only in a legacy folder are copied into the main folder.
+  let mediaChecked = 0;
+  const missingFiles: { id: number; path: string }[] = [];
+  try {
+    const [mrows] = await pool.query<any[]>('SELECT id, relative_path FROM media ORDER BY id DESC LIMIT 1000');
+    for (const m of mrows) {
+      mediaChecked++;
+      if (!getSafeFilePath(m.relative_path)) missingFiles.push({ id: m.id, path: m.relative_path });
+    }
+  } catch {}
+  if (missingFiles.length > 0) {
+    if (status === 'healthy') status = 'warning';
+    warnings.push(`${missingFiles.length} of ${mediaChecked} media records point to files that do not exist on disk. Re-upload them, or add the folder that holds them to MEDIA_LEGACY_DIRS.`);
+  }
+
+  if (dbEngine === 'sqlite-fallback') {
+    status = 'critical';
+    warnings.push('CRITICAL: Content is being read/written in the embedded SQLite fallback, NOT MySQL. Check DB_* settings.');
+  }
+
   return NextResponse.json({
     data: {
+      dbEngine,
+      mediaChecked,
+      missingFileCount: missingFiles.length,
+      missingFiles: missingFiles.slice(0, 20),
+      legacyDirsFound: getLegacyDirs(),
+      sqliteFallbackAllowed: sqliteFallbackAllowed(),
       status,
       runtimeCwd: cwd,
       mediaStorageDir: storageDir,
