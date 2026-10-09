@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const alt = (formData.get('alt') as string) || '';
+    const purpose = (formData.get('purpose') as string) || null;
 
     if (!file) {
       return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'No file provided in form-data field "file".' } }, { status: 400 });
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    const media = await uploadMedia(buffer, file.name, file.type, alt);
+    const media = await uploadMedia(buffer, file.name, file.type, alt, purpose);
     return NextResponse.json({ data: media }, { status: 201 });
   } catch (error: any) {
     console.error('[API MEDIA UPLOAD ERROR]', error);

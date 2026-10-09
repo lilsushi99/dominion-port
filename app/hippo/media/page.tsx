@@ -2,6 +2,7 @@
 
 // app/hippo/media/page.tsx — Media Asset Library with Live Hostinger Storage Diagnostics
 import React, { useState, useEffect } from 'react';
+import { uploadMediaFile } from '@/lib/admin-upload';
 import {
   Upload,
   Search,
@@ -116,19 +117,12 @@ export default function HippoMediaPage() {
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('alt', file.name.split('.')[0] || '');
-
       try {
-        const res = await fetch('/api/v1/admin/media/upload', {
-          method: 'POST',
-          headers: { 'X-CSRF-Token': csrfToken },
-          body: formData
-        });
-        if (res.ok) count++;
-      } catch (err) {
+        await uploadMediaFile(file, { csrfToken, alt: file.name.split('.')[0] || '', purpose: 'project' });
+        count++;
+      } catch (err: any) {
         console.error(err);
+        alert(`${file.name}: ${err?.message || 'upload failed'}`);
       }
     }
 

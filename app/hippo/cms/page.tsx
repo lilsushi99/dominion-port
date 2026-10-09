@@ -2,6 +2,7 @@
 
 // app/hippo/cms/page.tsx — CMS Content Management with Profile Images, Intro, Contact Links & Footer
 import React, { useState, useEffect, useRef } from 'react';
+import { uploadMediaFile } from '@/lib/admin-upload';
 import {
   Save,
   Check,
@@ -146,36 +147,26 @@ export default function HippoCmsPage() {
     if (!file) return;
 
     setUploadingProfilePic(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('alt', 'Dominion profile picture');
 
     try {
-      const uploadRes = await fetch('/api/v1/admin/media/upload', {
-        method: 'POST',
-        headers: { 'X-CSRF-Token': csrfToken },
-        body: formData
-      });
+      const media = await uploadMediaFile(file, { csrfToken, alt: 'Dominion profile picture', purpose: 'profile' });
 
-      const uploadJson = await uploadRes.json();
-      if (!uploadRes.ok || !uploadJson.data) {
-        throw new Error(uploadJson.error?.message || 'Media upload failed');
-      }
-
-      const mediaId = uploadJson.data.id;
       const addRes = await fetch('/api/v1/admin/cms/profile-images', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-CSRF-Token': csrfToken
         },
-        body: JSON.stringify({ media_id: mediaId })
+        body: JSON.stringify({ media_id: media.id })
       });
 
-      if (addRes.ok) {
-        showToast('Profile picture uploaded!');
-        await fetchProfileImages();
+      if (!addRes.ok) {
+        let msg = `Saving the profile picture failed (HTTP ${addRes.status}).`;
+        try { msg = (await addRes.json()).error?.message || msg; } catch {}
+        throw new Error(msg);
       }
+      showToast('Profile picture uploaded!');
+      await fetchProfileImages();
     } catch (err: any) {
       alert(err.message || 'Failed to upload profile picture');
     } finally {

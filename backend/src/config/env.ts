@@ -13,7 +13,6 @@ export interface AppEnv {
   DB_PASSWORD: string;
   DB_NAME: string;
   MEDIA_STORAGE_DIR: string;
-  PUBLIC_MEDIA_URL: string;
   SITE_URL: string;
   ADMIN_ORIGIN?: string;
   SESSION_COOKIE_DOMAIN?: string;
@@ -142,7 +141,6 @@ export function validateEnv(): AppEnv {
     DB_PASSWORD: normalizePassword(process.env.DB_PASSWORD || process.env.DATABASE_PASSWORD),
     DB_NAME: normalizeDbName(process.env.DB_NAME || process.env.DATABASE_NAME),
     MEDIA_STORAGE_DIR: uploadDir,
-    PUBLIC_MEDIA_URL: normalizePublicMediaUrl(process.env.PUBLIC_MEDIA_URL),
     SITE_URL: process.env.SITE_URL || 'http://localhost:3000',
     ADMIN_ORIGIN: process.env.ADMIN_ORIGIN || process.env.SITE_URL || 'http://localhost:3000',
     SESSION_COOKIE_DOMAIN: process.env.SESSION_COOKIE_DOMAIN,

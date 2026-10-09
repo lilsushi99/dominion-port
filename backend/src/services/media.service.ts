@@ -1,10 +1,11 @@
+import fs from 'fs';
 // backend/src/services/media.service.ts — Media Management & Validation
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import sharp from 'sharp';
 import { pool } from '../db/pool';
 import { env } from '../config/env';
-import { saveFileToDisk, deleteFileFromDisk, normalizeRelativePath } from '../storage/disk';
+import { saveFileToDisk, deleteFileFromDisk, normalizeRelativePath, resolveStoragePath } from '../storage/disk';
 
 export interface MediaRecord {
   id: number;
@@ -133,8 +134,9 @@ export function buildPublicMediaUrl(rawPath?: string | null): string {
   const rel = cleanRelativePath(rawPath || '');
   if (!rel) return '';
   if (rel.startsWith('http://') || rel.startsWith('https://')) return rel;
-  const base = env.PUBLIC_MEDIA_URL.replace(/\/+$/, '');
-  return `${base}/${rel.replace(/^\/+/, '')}`;
+  // ONE public prefix for every consumer (admin, public site, profile image). It is the
+  // /media route that serves MEDIA_STORAGE_DIR, so it is deliberately NOT configurable.
+  return `/media/${rel.replace(/^\/+/, '')}`;
 }
 
 /**
@@ -167,11 +169,18 @@ export function formatMediaRecord(row: any): MediaRecord {
 /**
  * Processes and uploads a single file buffer.
  */
+export type MediaPurpose = 'project' | 'profile' | 'paper';
+
+export function normalizePurpose(v?: string | null): MediaPurpose {
+  return v === 'profile' || v === 'paper' ? v : 'project';
+}
+
 export async function uploadMedia(
   fileBuffer: Buffer,
   originalFilename: string,
   declaredMime: string,
-  altText?: string
+  altText?: string,
+  purpose?: string | null
 ): Promise<MediaRecord> {
   const isImage = ALLOWED_IMAGE_MIMES.has(declaredMime);
   const isVideo = ALLOWED_VIDEO_MIMES.has(declaredMime);
@@ -199,7 +208,7 @@ export async function uploadMedia(
   const ext = path.extname(originalFilename).toLowerCase() || (isImage ? '.webp' : '.mp4');
   const storedName = `${uuidv4()}${ext}`;
   const subFolder = isImage ? 'images' : 'videos';
-  const relativePath = `${subFolder}/${storedName}`;
+  const relativePath = `${normalizePurpose(purpose)}-media/${subFolder}/${storedName}`;
 
   // Image metadata extraction via sharp
   let width: number | null = null;
@@ -385,4 +394,69 @@ export async function deleteMediaSafely(id: number): Promise<{ success: boolean;
   await pool.query('DELETE FROM media WHERE id = ?', [id]);
 
   return { success: true };
+}
+
+
+/**
+ * Finalizes a file that is already on disk (assembled from chunks) without loading it into memory.
+ * Validates type, size and signature, moves it into persistent storage and records it in `media`.
+ */
+export async function uploadMediaFromPath(
+  tempPath: string,
+  originalFilename: string,
+  declaredMime: string,
+  altText?: string,
+  purpose?: string | null
+): Promise<MediaRecord> {
+  const isImage = ALLOWED_IMAGE_MIMES.has(declaredMime);
+  const isVideo = ALLOWED_VIDEO_MIMES.has(declaredMime);
+  if (!isImage && !isVideo) {
+    throw new Error(`Unsupported file type: ${declaredMime}. Allowed types: JPEG, PNG, WebP, GIF, SVG, MP4, WebM, QuickTime.`);
+  }
+
+  const sizeBytes = fs.statSync(tempPath).size;
+  if (isImage && sizeBytes > MAX_IMAGE_SIZE_BYTES) throw new Error('Image exceeds maximum allowed size of 10 MB.');
+  if (isVideo && sizeBytes > MAX_VIDEO_SIZE_BYTES) throw new Error('Video exceeds maximum allowed size of 200 MB.');
+
+  const fd = fs.openSync(tempPath, 'r');
+  const head = Buffer.alloc(Math.min(512, sizeBytes));
+  fs.readSync(fd, head, 0, head.length, 0);
+  fs.closeSync(fd);
+  if (!validateMagicBytes(head, declaredMime).valid) {
+    throw new Error(`File signature does not match declared type '${declaredMime}'. Upload rejected.`);
+  }
+
+  const ext = path.extname(originalFilename).toLowerCase() || (isImage ? '.webp' : '.mp4');
+  const storedName = `${uuidv4()}${ext}`;
+  const relativePath = `${normalizePurpose(purpose)}-media/${isImage ? 'images' : 'videos'}/${storedName}`;
+
+  let width: number | null = null;
+  let height: number | null = null;
+  if (isImage && declaredMime !== 'image/svg+xml') {
+    try {
+      const meta = await sharp(tempPath).metadata();
+      width = meta.width || null;
+      height = meta.height || null;
+    } catch (err) {
+      console.warn('[MEDIA] Failed to extract image dimensions:', err);
+    }
+  }
+
+  const dest = resolveStoragePath(relativePath);
+  if (!dest) throw new Error('Invalid storage path.');
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
+  try {
+    fs.renameSync(tempPath, dest);
+  } catch {
+    fs.copyFileSync(tempPath, dest);
+    fs.unlinkSync(tempPath);
+  }
+
+  const [result] = await pool.query<any>(
+    `INSERT INTO media (kind, original_name, stored_name, relative_path, mime, size_bytes, width, height, duration_s, alt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [isImage ? 'image' : 'video', originalFilename, storedName, relativePath, declaredMime, sizeBytes, width, height, null, altText || null]
+  );
+  const [rows] = await pool.query<any[]>('SELECT * FROM media WHERE id = ?', [result.insertId]);
+  return formatMediaRecord(rows[0]);
 }
