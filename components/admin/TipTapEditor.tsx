@@ -2,6 +2,7 @@
 
 // components/admin/TipTapEditor.tsx — TipTap Rich Text Editor for Papers with Media Nodes
 import React, { useState } from 'react';
+import { uploadMediaFile } from '@/lib/admin-upload';
 import { useEditor, EditorContent, NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import LinkExtension from '@tiptap/extension-link';
@@ -339,23 +340,12 @@ export function TipTapEditor({ initialJson, initialHtml, onChange, csrfToken }: 
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('alt', file.name.split('.')[0] || '');
-
     try {
-      const res = await fetch('/api/v1/admin/media/upload', {
-        method: 'POST',
-        headers: { 'X-CSRF-Token': csrfToken },
-        body: formData,
-      });
-      const json = await res.json();
-      if (json.data) {
-        insertMedia(json.data);
-      }
-    } catch (err) {
+      const media = await uploadMediaFile(file, { csrfToken, alt: file.name.split('.')[0] || '', purpose: 'paper' });
+      insertMedia(media);
+    } catch (err: any) {
       console.error(err);
-      alert('Upload failed.');
+      alert(err?.message || 'Upload failed.');
     }
   };
 

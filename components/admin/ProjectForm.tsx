@@ -2,6 +2,7 @@
 
 // components/admin/ProjectForm.tsx — Full Project Editor
 import React, { useState, useEffect } from 'react';
+import { uploadMediaFile } from '@/lib/admin-upload';
 import { useRouter } from 'next/navigation';
 import {
   Upload,
@@ -121,29 +122,13 @@ export function ProjectForm({ initialProject, isNew = false }: ProjectFormProps)
   };
 
   const uploadFile = async (file: File, alt = ''): Promise<any> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('alt', alt);
-
     setUploading(true);
-    setUploadProgress(20);
-
-    const res = await fetch('/api/v1/admin/media/upload', {
-      method: 'POST',
-      headers: { 'X-CSRF-Token': csrfToken },
-      body: formData,
-    });
-
-    setUploadProgress(100);
-    setUploading(false);
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error?.message || 'File upload failed');
+    setUploadProgress(2);
+    try {
+      return await uploadMediaFile(file, { csrfToken, alt, purpose: 'project', onProgress: setUploadProgress });
+    } finally {
+      setUploading(false);
     }
-
-    const json = await res.json();
-    return json.data;
   };
 
   const handlePrimaryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

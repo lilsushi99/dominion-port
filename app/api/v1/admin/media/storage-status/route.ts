@@ -141,7 +141,7 @@ export async function GET(req: NextRequest) {
       status,
       runtimeCwd: cwd,
       mediaStorageDir: storageDir,
-      publicUrlPrefix: env.PUBLIC_MEDIA_URL,
+      publicUrlPrefix: '/media',
       isWritable,
       isInsideHbuilds,
       isInsidePublicHtml,

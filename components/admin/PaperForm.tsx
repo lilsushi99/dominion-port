@@ -2,6 +2,7 @@
 
 // components/admin/PaperForm.tsx — Full Paper Editor Form with TipTap, Cover Media & Metadata
 import React, { useState, useEffect } from 'react';
+import { uploadMediaFile } from '@/lib/admin-upload';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -151,24 +152,13 @@ export function PaperForm({ paper, isNew = false }: PaperFormProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('alt', file.name.split('.')[0] || '');
-
     try {
-      const res = await fetch('/api/v1/admin/media/upload', {
-        method: 'POST',
-        headers: { 'X-CSRF-Token': csrfToken },
-        body: formData,
-      });
-      const json = await res.json();
-      if (json.data) {
-        setCoverMedia(json.data);
-        setIsDirty(true);
-      }
-    } catch (err) {
+      const media = await uploadMediaFile(file, { csrfToken, alt: file.name.split('.')[0] || '', purpose: 'paper' });
+      setCoverMedia(media);
+      setIsDirty(true);
+    } catch (err: any) {
       console.error(err);
-      alert('Upload failed.');
+      alert(err?.message || 'Upload failed.');
     }
   };
 

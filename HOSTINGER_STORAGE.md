@@ -99,7 +99,7 @@ Add the following environment variables in your Hostinger **Advanced > Environme
 MEDIA_STORAGE_DIR=/home/u123456789/domains/yourdomain.com/media_uploads
 
 # Public Media URL Prefix
-PUBLIC_MEDIA_URL=/media
+# (PUBLIC_MEDIA_URL was removed: media URLs are always /media/<path>)
 
 # MySQL Credentials (Hostinger MySQL Database)
 DB_HOST=127.0.0.1

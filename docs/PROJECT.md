@@ -77,7 +77,7 @@ Never store file-system paths in content. The editor stores **media IDs**:
 5. Links in text are `link` marks with `href` (validated `http(s)`/`mailto`), stored in the JSON and rendered as `<a>`. Home intro uses the same pipeline.
 Saved → API read → render round trip must be lossless; this is covered by tests (§9).
 
-Three kinds of address, never mixed: **filesystem path** (server only, `MEDIA_STORAGE_DIR` + `relative_path`), **DB reference** (`media.id`), **public URL** (`PUBLIC_MEDIA_URL + /media/<relative_path>`, built at read time).
+Three kinds of address, never mixed: **filesystem path** (server only, `MEDIA_STORAGE_DIR` + `relative_path`), **DB reference** (`media.id`), **public URL** (always `/media/<relative_path>`, built at read time by `buildPublicMediaUrl`).
 
 ## 5. Storage and persistence on Hostinger
 - Files live in `MEDIA_STORAGE_DIR` (`UPLOAD_DIR` is only a deprecated alias), a directory **outside** the Git checkout and outside the build output that Hostinger replaces on deploy (I could not verify how `hbuild` behaves; see the check below). Example shape: `<account-home>/storage/uploads/YYYY/MM/<uuid>.<ext>`.
@@ -130,7 +130,7 @@ Generated from the title (lowercase, hyphenated, ASCII-folded); unique with `-2`
 - After admin saves, the API calls `POST {SITE_URL}/api/revalidate` with a secret so public pages refresh immediately.
 
 ## 11. Environment variables (only what's required)
-`NODE_ENV` · `PORT` · `DB_HOST DB_PORT DB_USER DB_PASSWORD DB_NAME` · `MEDIA_STORAGE_DIR` · `PUBLIC_MEDIA_URL` · `SITE_URL` · `ADMIN_ORIGIN` (if different) · `SESSION_COOKIE_DOMAIN` (only if site and API share a parent domain) · `REVALIDATE_SECRET` · frontend: `NEXT_PUBLIC_API_URL`, `API_URL` (server-side). `.env` is gitignored; `.env.example` lists names only.
+`NODE_ENV` · `PORT` · `DB_HOST DB_PORT DB_USER DB_PASSWORD DB_NAME` · `MEDIA_STORAGE_DIR` · `SITE_URL` · `ADMIN_ORIGIN` (if different) · `SESSION_COOKIE_DOMAIN` (only if site and API share a parent domain) · `REVALIDATE_SECRET` · frontend: `NEXT_PUBLIC_API_URL`, `API_URL` (server-side). `.env` is gitignored; `.env.example` lists names only.
 
 ## 12. Testing before launch
 Auth (login/logout/rate-limit/protected routes) · category CRUD + reorder + block-delete · project CRUD with year-only dates · primary image and video upload · gallery (add, caption, reorder, 10 cap, delete) · paper rich text round trip (bold, italic, link, heading, quote, image, video, text after media) · slug collisions and redirects · draft vs published visibility · video plays with seeking on the public page · two redeploys without losing media · DB reconnect behaviour.
@@ -145,3 +145,9 @@ Docs → migrations → auth + `admin:create` → storage/media API → CMS endp
 - **Background mode.** `site_settings.background_mode` (`off_black` default | `black`) controls the dark-theme background; `app/layout.tsx` reads it from MySQL and sets `data-bg` on `<html>`. Noise is a separate fixed layer behind the content layer, so it never overlays the profile image.
 - **DB engine.** MySQL only in production. The embedded SQLite fallback runs only when `NODE_ENV !== 'production'` or `ALLOW_SQLITE_FALLBACK=true`. `GET /api/v1/admin/media/storage-status` reports `dbEngine`.
 - **Deploy order:** run `npm run migrate` (applies 005) before or together with the deploy.
+
+## 15. Update: final media architecture
+- **Persistent location:** `MEDIA_STORAGE_DIR` (default: `<account root>/media_uploads`, OUTSIDE `hbuilds/`). Never `hbuilds/**/public`: that folder is replaced on every deploy, and Next.js does not serve files added to `public/` after the build.
+- **Logical folders inside it:** `project-media/{images,videos}`, `profile-media/images`, `paper-media/{images,videos}`. Older files (`images/…`, `videos/…`, legacy folders) are still found and copied in on first read.
+- **One URL format:** `/media/<relative_path>` everywhere (admin, public, profile). `PUBLIC_MEDIA_URL` was removed because a wrong value made admin previews and the profile image break while the public site worked.
+- **Uploads:** one client helper (`lib/admin-upload.ts`). Files ≤ 2 MB go in one request; larger files (videos) are uploaded in 2 MB chunks via `/api/v1/admin/media/chunk`, assembled on disk (never fully in memory), validated by file signature, then recorded in `media`. Errors are shown, not swallowed.
